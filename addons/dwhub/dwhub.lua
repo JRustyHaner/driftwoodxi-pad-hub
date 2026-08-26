@@ -63,6 +63,10 @@ local function open_category(name, n)
         n:push(screens.rules(ctx));
         return;
     end
+    if (name == 'Port') then
+        n:push(screens.port(ctx));
+        return;
+    end
     n:push(screens.placeholder(name, 'Screen scaffolding — commands arrive in feature PRs.'));
 end
 
