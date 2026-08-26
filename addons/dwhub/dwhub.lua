@@ -9,7 +9,7 @@
 
 addon.name    = 'dwhub';
 addon.author  = 'DriftwoodXI Pad Hub';
-addon.version = '0.2.0';
+addon.version = '0.3.0';
 addon.desc    = 'Pad-first DriftwoodXI hub (squad, jobs, items, rules, port).';
 addon.link    = 'https://github.com/JRustyHaner/driftwoodxi-pad-hub';
 
@@ -38,7 +38,23 @@ end
 
 cmd_queue:set_send(live_send);
 
+local function make_ctx()
+    return {
+        enqueue = function(command)
+            cmd_queue:enqueue(command);
+        end,
+        set_status = function(msg)
+            nav.status = msg or '';
+        end,
+    };
+end
+
 local function open_category(name, n)
+    local ctx = make_ctx();
+    if (name == 'Squad') then
+        n:push(screens.squad(ctx));
+        return;
+    end
     n:push(screens.placeholder(name, 'Screen scaffolding — commands arrive in feature PRs.'));
 end
 
@@ -134,7 +150,16 @@ local function draw_window()
     if (visible) then
         handle_input();
 
-        -- Description panel (top) — OSK-safe region for future search
+        local cur = nav:current();
+        -- Search / text at TOP for Steam Deck OSK clearance
+        if (cur ~= nil and cur.search ~= nil) then
+            imgui.TextColored(theme.colors.textDim, 'Text');
+            imgui.PushItemWidth(-1);
+            imgui.InputText('##dwhub_search', cur.search, 64);
+            imgui.PopItemWidth();
+            imgui.Separator();
+        end
+
         draw_description();
         imgui.Separator();
         draw_list();
@@ -150,6 +175,7 @@ local function draw_window()
 
     if (not state.open[1]) then
         nav:reset(nil);
+        input.capture(false);
     end
 end
 
