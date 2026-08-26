@@ -150,6 +150,73 @@ function M.squad(ctx)
     };
 end
 
+function M.jobs(ctx)
+    local job_labels = {};
+    for i, j in ipairs(cmds.JOBS) do
+        job_labels[i] = j;
+    end
+
+    local function change_jobs(n)
+        n:push(text_entry('Character (me or name)', 'Who to change jobs for.', 'me', function(char, nav)
+            local mains = {};
+            for i, j in ipairs(job_labels) do
+                mains[i] = j;
+            end
+            nav:push(pick_list('Main job', mains, function(main, nav2)
+                local subs = { 'none' };
+                for i, j in ipairs(job_labels) do
+                    subs[#subs + 1] = j;
+                end
+                nav2:push(pick_list('Sub job', subs, function(sub, nav3)
+                    fire(ctx, cmds.jobs_set(char, main, sub), string.format('Jobs %s → %s/%s', char, main, sub));
+                    nav3:pop();
+                    nav3:pop();
+                    nav3:pop();
+                end));
+            end));
+        end));
+    end
+
+    return {
+        id = 'jobs',
+        title = 'Jobs',
+        rows = action_rows({
+            { id = 'change', label = 'Change jobs…', desc = 'Pick character, then main and sub from the full job list.' },
+            { id = 'use', label = 'Use preset…', desc = 'Apply a saved lineup (!jobs use).' },
+            { id = 'save', label = 'Save preset…', desc = 'Save current lineup (!jobs save).' },
+            { id = 'delete', label = 'Delete preset…', desc = 'Delete a saved lineup (!jobs delete).' },
+            { id = 'list', label = 'List presets', desc = 'Print presets to chat (!jobs list).' },
+        }),
+        on_confirm = function(self, index, n)
+            local row = self:rows()[index];
+            if (row == nil) then
+                return;
+            end
+            local id = row.id;
+            if (id == 'change') then
+                change_jobs(n);
+            elseif (id == 'use') then
+                n:push(text_entry('Preset name', 'Preset to use.', '', function(name, nav)
+                    fire(ctx, cmds.jobs_use(name), 'Use preset ' .. name);
+                    nav:pop();
+                end));
+            elseif (id == 'save') then
+                n:push(text_entry('Preset name', 'Name to save as.', '', function(name, nav)
+                    fire(ctx, cmds.jobs_save(name), 'Save preset ' .. name);
+                    nav:pop();
+                end));
+            elseif (id == 'delete') then
+                n:push(text_entry('Preset name', 'Preset to delete.', '', function(name, nav)
+                    fire(ctx, cmds.jobs_delete(name), 'Delete preset ' .. name);
+                    nav:pop();
+                end));
+            elseif (id == 'list') then
+                fire(ctx, cmds.jobs_list(), 'Preset list sent to chat.');
+            end
+        end,
+    };
+end
+
 function M.home(nav, open_category)
     return {
         id = 'home',
