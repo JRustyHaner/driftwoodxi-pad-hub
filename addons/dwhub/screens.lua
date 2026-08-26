@@ -326,15 +326,7 @@ function M.items(ctx)
     local function equip_flow(n)
         n:push(text_entry('Character', 'Who to equip.', '', function(char, nav)
             nav:push(pick_list('Slot', cmds.EQUIP_SLOTS, function(slot, nav2)
-                nav2:push(pick_list('Item', { 'auto', 'none' }, function(special, nav3)
-                    if (special == 'auto' or special == 'none') then
-                        fire(ctx, cmds.squad_equip(char, slot, special), string.format('Equip %s %s → %s', char, slot, special));
-                        nav3:pop(); nav3:pop(); nav3:pop();
-                        return;
-                    end
-                end));
-                -- Also allow typed item name
-                nav2:push(text_entry('Item name (or pick Auto/Empty via Back)', 'Item to pin on ' .. slot, '', function(item, nav3)
+                nav2:push(text_entry('Item (or auto / none)', 'Item name, auto, or none.', 'auto', function(item, nav3)
                     fire(ctx, cmds.squad_equip(char, slot, item), string.format('Equip %s %s → %s', char, slot, item));
                     nav3:pop(); nav3:pop(); nav3:pop();
                 end));

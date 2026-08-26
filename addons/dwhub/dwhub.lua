@@ -67,7 +67,11 @@ local function open_category(name, n)
         n:push(screens.port(ctx));
         return;
     end
-    n:push(screens.placeholder(name, 'Screen scaffolding — commands arrive in feature PRs.'));
+    if (name == 'Items') then
+        n:push(screens.items(ctx));
+        return;
+    end
+    n:push(screens.placeholder(name, 'Unknown category.'));
 end
 
 local function ensure_root()
