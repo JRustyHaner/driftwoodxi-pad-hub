@@ -61,7 +61,10 @@ Closes #
 - [ ] Acceptance criteria from the issue exercised
 - [ ] Docs updated
 - [ ] No unrelated files changed
+- [ ] CI green (luacheck + busted)
 
 ## Notes
 -
 ```
+
+PRs should stay green on the `ci` workflow (`.github/workflows/ci.yml`). Enable branch protection on `main` to require that check when ready.

@@ -1,0 +1,30 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: leafo/gh-actions-lua@v10
+        with:
+          luaVersion: "luajit-2.1"
+
+      - uses: leafo/gh-actions-luarocks@v4
+
+      - name: Install tools
+        run: |
+          luarocks install luacheck
+          luarocks install busted
+
+      - name: Luacheck
+        run: luacheck addons/dwhub spec
+
+      - name: Busted
+        run: busted -o utfTerminal spec
