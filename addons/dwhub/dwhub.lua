@@ -248,6 +248,10 @@ ashita.events.register('load', 'dwhub_load', function ()
     print(chat.header('dwhub'):append(chat.message('/dwhub (or /hub) toggles the pad hub. D-pad / arrows move, A/Enter confirm, B/Esc back.')));
 end);
 
+ashita.events.register('unload', 'dwhub_unload', function ()
+    input.capture(false);
+end);
+
 return {
     state = state,
     set_open = set_open,
