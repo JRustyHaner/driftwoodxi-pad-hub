@@ -29,9 +29,13 @@ Scaffolding in progress (docs → addon → CI → nav → features).
 
 All work follows **issue → branch → code → test → document → PR → merge**. See [AGENTS.md](./AGENTS.md).
 
-## Install (later)
+## Install
 
-Copy the addon folder into Ashita `addons/`, enable in your boot script or `/addon load …`.
+1. Copy [`addons/dwhub/`](./addons/dwhub/) into your Ashita `addons/dwhub/` folder.
+2. `/addon load dwhub` (or add that line to your boot script).
+3. Toggle with `/dwhub` or `/hub`.
+
+Details: [addons/dwhub/README.md](./addons/dwhub/README.md).
 
 ## Related
 
