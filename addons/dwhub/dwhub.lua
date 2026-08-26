@@ -81,12 +81,6 @@ local function handle_input()
     end
     if (key_pressed(ImGuiKey_Escape) or key_pressed(ImGuiKey_GamepadFaceRight)) then
         local result = nav:back();
-        if (result == 'close' or result == false and nav:depth() <= 1) then
-            -- on_back returned close, or pop failed at root
-            if (result == 'close') then
-                set_open(false);
-            end
-        end
         if (result == 'close') then
             set_open(false);
         end

@@ -5,6 +5,7 @@ files['addons/dwhub'] = {
     globals = {
         'addon',
         'ashita',
+        'AshitaCore',
         'bit',
         'imgui',
         'chat',
