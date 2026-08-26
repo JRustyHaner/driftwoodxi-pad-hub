@@ -14,7 +14,11 @@ Opens a D-pad navigable hub (macro / bind to toggle) that issues the same typed 
 
 Search fields stay at the **top** of the window so Steam Deck OSK does not cover them. Select can stay on OSK; open the hub from a macro.
 
-Menu trees and pad rules: **[docs/UX.md](./docs/UX.md)**. Chrome mock: **[docs/mockups/ffxi-hub-chrome.html](./docs/mockups/ffxi-hub-chrome.html)**. Deck binds: **[docs/BINDS.md](./docs/BINDS.md)**.
+- Menu trees: **[docs/UX.md](./docs/UX.md)**
+- Chrome mock: **[docs/mockups/ffxi-hub-chrome.html](./docs/mockups/ffxi-hub-chrome.html)**
+- Deck binds: **[docs/BINDS.md](./docs/BINDS.md)**
+- Deck install: **[docs/DECK.md](./docs/DECK.md)**
+- Acceptance: **[docs/ACCEPTANCE.md](./docs/ACCEPTANCE.md)**
 
 ## Non-goals
 
@@ -23,11 +27,11 @@ Menu trees and pad rules: **[docs/UX.md](./docs/UX.md)**. Chrome mock: **[docs/m
 
 ## Status
 
-Scaffolding in progress (docs → addon → CI → nav → features).
+**MVP feature-complete** (v1.0.0): Home categories wired to Squad / Jobs / Items / Rules / Port. Validate on Deck with [ACCEPTANCE.md](./docs/ACCEPTANCE.md).
 
 ## Contributing / agent workflow
 
-All work follows **issue → branch → code → test → document → PR → merge**. See [AGENTS.md](./AGENTS.md).
+All work follows **issue → branch → code → test → document → PR → merge**. See [AGENTS.md](./AGENTS.md). PRs should stay CI-green (`luacheck` + `busted`).
 
 ## Install
 
@@ -35,10 +39,10 @@ All work follows **issue → branch → code → test → document → PR → me
 2. `/addon load dwhub` (or add that line to your boot script).
 3. Toggle with `/dwhub` or `/hub`.
 
-Details: [addons/dwhub/README.md](./addons/dwhub/README.md).
+Deck-oriented steps: [docs/DECK.md](./docs/DECK.md). Addon readme: [addons/dwhub/README.md](./addons/dwhub/README.md).
 
 ## Related
 
-- Deck launch helpers: [driftwoodxi-steamdeck](https://github.com/JRustyHaner/driftwoodxi-steamdeck) (if applicable)
+- Deck launch helpers: [driftwoodxi-steamdeck](https://github.com/JRustyHaner/driftwoodxi-steamdeck)
 - Typed commands: https://xi.driftwoodgaming.com/commands
 - Allowed addons: https://xi.driftwoodgaming.com/addons
