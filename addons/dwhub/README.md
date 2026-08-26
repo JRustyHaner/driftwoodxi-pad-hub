@@ -10,6 +10,15 @@ Ashita 4 addon: controller-first DriftwoodXI hub.
    - Or add `/addon load dwhub` to your boot script (e.g. `driftwood-default.txt`).
 3. Toggle: `/dwhub` or `/hub`
 
+## Controls
+
+| Input | Action |
+|-------|--------|
+| D-pad / arrow keys | Move focus |
+| A / Enter | Confirm |
+| B / Esc | Back (closes hub on Home) |
+| `/dwhub` | Toggle |
+
 ## Commands
 
 | Command | Effect |
@@ -20,4 +29,4 @@ Ashita 4 addon: controller-first DriftwoodXI hub.
 
 ## Status
 
-Skeleton: themed empty window only. See repo [docs/UX.md](../../docs/UX.md) for the target menu tree.
+Nav shell with Home categories (Squad, Jobs, Items, Rules, Port). Category screens are placeholders until feature PRs. See [docs/UX.md](../../docs/UX.md).
