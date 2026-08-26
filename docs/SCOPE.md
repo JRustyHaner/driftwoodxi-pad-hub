@@ -1,16 +1,23 @@
 # Scope
 
-Client-only Ashita Lua hub for DriftwoodXI pad play.
+Client-only Ashita Lua hub for DriftwoodXI pad play (Steam Deck first).
 
-## In scope
+## In scope (MVP)
 
-- ImGui (or similar) hub with gamepad navigation
-- Issue documented `!squad`, `!jobs`, `!port`, `!squad rules` / `!dwg` commands
-- Toggle via Ashita command + keyboard bind / Deck macro
-- Top-aligned search for OSK clearance on Steam Deck
+- ImGui hub with FFXI-style chrome and gamepad navigation (see [UX.md](./UX.md))
+- Home categories: **Squad, Jobs, Items, Rules, Port**
+- Typed command backends: `!squad`, `!jobs`, `!port`, `!squad rules` / related `!dw*` machine channels as needed
+- Full job list for main/sub (locked jobs greyed)
+- Items: find / send / fetch / equip / box / gear / unpin / optimize
+- Toggle via `/dwhub` + keyboard bind / Deck macro
+- Top-aligned search for Steam Deck OSK clearance
+- Throttled outbound `!` command queue
+- CI: luacheck + busted on pure Lua modules
 
 ## Out of scope
 
-- Server / `!… menu` event dialogs
+- Server / native `!… menu` event dialogs
 - Packet forgery
 - Automating combat or unattended play
+- Gambit rule *authoring* (assign presets only)
+- Merc, craft, parse, raid, market UIs

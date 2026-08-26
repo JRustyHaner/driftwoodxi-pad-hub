@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FFXI Main Menu HUD — DriftwoodXI Pad Hub chrome reference</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#1b1b21",
+                        "on-tertiary-fixed": "#400201",
+                        "surface-container-highest": "#34343a",
+                        "on-tertiary-fixed-variant": "#7c2d22",
+                        "surface-container": "#1f1f25",
+                        "tertiary-container": "#3c0000",
+                        "primary-container": "#000066",
+                        "error": "#ffb4ab",
+                        "tertiary-fixed": "#ffdad4",
+                        "border-outer": "#CCCCCC",
+                        "inverse-on-surface": "#303036",
+                        "background": "#131318",
+                        "surface-bright": "#39383f",
+                        "outline-variant": "#464651",
+                        "outline": "#908f9d",
+                        "on-secondary-container": "#aeb1e9",
+                        "selection-yellow": "#FFFF00",
+                        "surface-tint": "#bfc2ff",
+                        "surface-variant": "#34343a",
+                        "on-primary": "#1f247b",
+                        "tertiary-fixed-dim": "#ffb4a8",
+                        "on-background": "#e4e1e9",
+                        "secondary-container": "#3f4273",
+                        "on-primary-fixed-variant": "#373d92",
+                        "inverse-primary": "#5056ac",
+                        "primary": "#bfc2ff",
+                        "secondary-fixed": "#e0e0ff",
+                        "on-surface": "#e4e1e9",
+                        "secondary-fixed-dim": "#bfc2fb",
+                        "surface-container-lowest": "#0e0e13",
+                        "surface-dim": "#131318",
+                        "on-secondary-fixed-variant": "#3f4273",
+                        "on-tertiary": "#5e160e",
+                        "border-inner": "#666666",
+                        "primary-fixed": "#e0e0ff",
+                        "secondary": "#bfc2fb",
+                        "primary-fixed-dim": "#bfc2ff",
+                        "surface-container-high": "#2a292f",
+                        "on-surface-variant": "#c7c5d3",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-container": "#737ad2",
+                        "surface": "#131318",
+                        "active-white": "#FFFFFF",
+                        "error-container": "#93000a",
+                        "on-primary-fixed": "#030568",
+                        "tertiary": "#ffb4a8",
+                        "on-tertiary-container": "#c76557",
+                        "inverse-surface": "#e4e1e9",
+                        "on-secondary": "#282c5b",
+                        "on-secondary-fixed": "#131645",
+                        "dimmed-grey": "#AAAAAA",
+                        "on-error": "#690005"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-indent": "16px",
+                        "window-padding": "10px",
+                        "item-gap": "4px",
+                        "border-width": "1px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Hanken Grotesk"],
+                        "label-md": ["JetBrains Mono"],
+                        "body-sm": ["Hanken Grotesk"],
+                        "headline-sm": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "label-md": ["13px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "400" }],
+                        "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "0.05em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+body {
+    background-color: #0a0a12;
+    background-size: cover;
+    background-position: center;
+}
+.ffxi-window {
+    background: linear-gradient(180deg, rgba(0, 0, 102, 0.7) 0%, rgba(0, 0, 51, 0.7) 100%);
+    border: 1px solid #CCC;
+    box-shadow: inset 1px 1px 0 0 #666, inset -1px -1px 0 0 #666;
+    border-radius: 0;
+}
+.ffxi-cursor {
+    color: #FFF;
+    filter: drop-shadow(1px 1px 0 #000);
+}
+</style>
+</head>
+<body class="h-screen w-screen overflow-hidden text-active-white font-body-md">
+<!-- Description Window (Top Left) -->
+<div class="fixed top-[40px] left-[20px] w-[300px] ffxi-window p-window-padding z-40">
+<h2 class="font-headline-sm text-headline-sm text-selection-yellow mb-2 tracking-wide">Category Selection</h2>
+<p class="font-body-md text-body-md text-active-white">
+            Manage your inventory, gear, and items.<br/>
+            Select to view currently held items.
+        </p>
+</div>
+<!-- Side NavBar (Sub-menu) — pad hub uses vertical lists like this -->
+<div class="fixed left-[20px] w-48 ffxi-window p-window-padding flex flex-col gap-item-gap z-40" style="top: 140px;">
+<div class="mb-4 border-b border-border-inner pb-1">
+<h3 class="font-headline-sm text-headline-sm text-active-white">SUB-MENU</h3>
+<span class="font-label-md text-label-md text-dimmed-grey block">Category Selection</span>
+</div>
+<ul class="flex flex-col gap-1 w-full">
+<li class="relative flex items-center pl-6 pr-2 py-1 bg-transparent group cursor-pointer border border-active-white">
+<span class="material-symbols-outlined absolute left-0 text-[18px] ffxi-cursor animate-pulse">pan_tool_alt</span>
+<span class="material-symbols-outlined mr-2 text-[16px] text-selection-yellow">inventory</span>
+<span class="font-label-md text-label-md text-selection-yellow flex-1">Items</span>
+</li>
+<li class="relative flex items-center pl-6 pr-2 py-1 bg-transparent hover:text-selection-yellow cursor-pointer transition-colors duration-75 text-active-white">
+<span class="material-symbols-outlined mr-2 text-[16px]">flash_on</span>
+<span class="font-label-md text-label-md flex-1">Abilities</span>
+</li>
+<li class="relative flex items-center pl-6 pr-2 py-1 bg-transparent hover:text-selection-yellow cursor-pointer transition-colors duration-75 text-active-white">
+<span class="material-symbols-outlined mr-2 text-[16px]">auto_fix_high</span>
+<span class="font-label-md text-label-md flex-1">Spells</span>
+</li>
+<li class="relative flex items-center pl-6 pr-2 py-1 bg-transparent hover:text-selection-yellow cursor-pointer transition-colors duration-75 text-active-white">
+<span class="material-symbols-outlined mr-2 text-[16px]">vpn_key</span>
+<span class="font-label-md text-label-md flex-1">Key Items</span>
+</li>
+<li class="relative flex items-center pl-6 pr-2 py-1 bg-transparent hover:text-selection-yellow cursor-pointer transition-colors duration-75 text-active-white">
+<span class="material-symbols-outlined mr-2 text-[16px]">diamond</span>
+<span class="font-label-md text-label-md flex-1">Crystals</span>
+</li>
+</ul>
+</div>
+<nav class="fixed w-full z-50 flex justify-around items-center px-window-padding h-12 bg-gradient-to-b from-primary-container to-surface-container-lowest border-2 border-border-outer ring-1 ring-inset ring-border-inner mb-window-padding max-w-[95%] left-1/2 -translate-x-1/2 opacity-90" style="top: 80px; margin-bottom: 10px;">
+<a class="font-body-md text-body-md text-active-white hover:text-selection-yellow transition-colors duration-75 px-4 py-1" href="#">Status</a>
+<a class="font-body-md text-body-md text-active-white hover:text-selection-yellow transition-colors duration-75 px-4 py-1" href="#">Equipment</a>
+<a class="font-body-md text-body-md text-active-white hover:text-selection-yellow transition-colors duration-75 px-4 py-1" href="#">Magic</a>
+<a class="font-body-md text-body-md text-selection-yellow ring-1 ring-active-white scale-100 transition-all px-4 py-1 flex items-center gap-1 bg-primary-container/50" href="#">Items</a>
+<a class="font-body-md text-body-md text-active-white hover:text-selection-yellow transition-colors duration-75 px-4 py-1" href="#">Social</a>
+<a class="font-body-md text-body-md text-active-white hover:text-selection-yellow transition-colors duration-75 px-4 py-1" href="#">Map</a>
+<a class="font-body-md text-body-md text-active-white hover:text-selection-yellow transition-colors duration-75 px-4 py-1" href="#">System</a>
+</nav>
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-window-padding py-2 bg-transparent border-b border-border-outer">
+<div class="font-headline-sm text-headline-sm italic text-active-white drop-shadow-md">
+            FFXI HUD SYSTEM — Pad Hub chrome reference
+        </div>
+</header>
+</body>
+</html>
