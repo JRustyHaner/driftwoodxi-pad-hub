@@ -21,6 +21,7 @@ local theme = require('theme');
 local navmod = require('nav');
 local screens = require('screens');
 local queue_mod = require('queue');
+local input = require('input');
 
 local state = {
     open = { false },
@@ -51,7 +52,9 @@ local function set_open(value)
     state.open[1] = value and true or false;
     if (state.open[1]) then
         ensure_root();
+        input.capture(true);
     else
+        input.capture(false);
         cmd_queue:clear();
         nav:reset(nil);
     end

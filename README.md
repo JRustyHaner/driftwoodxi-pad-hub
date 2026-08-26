@@ -14,7 +14,7 @@ Opens a D-pad navigable hub (macro / bind to toggle) that issues the same typed 
 
 Search fields stay at the **top** of the window so Steam Deck OSK does not cover them. Select can stay on OSK; open the hub from a macro.
 
-Menu trees and pad rules: **[docs/UX.md](./docs/UX.md)**. Chrome mock: **[docs/mockups/ffxi-hub-chrome.html](./docs/mockups/ffxi-hub-chrome.html)**.
+Menu trees and pad rules: **[docs/UX.md](./docs/UX.md)**. Chrome mock: **[docs/mockups/ffxi-hub-chrome.html](./docs/mockups/ffxi-hub-chrome.html)**. Deck binds: **[docs/BINDS.md](./docs/BINDS.md)**.
 
 ## Non-goals
 
