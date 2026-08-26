@@ -55,6 +55,10 @@ local function open_category(name, n)
         n:push(screens.squad(ctx));
         return;
     end
+    if (name == 'Jobs') then
+        n:push(screens.jobs(ctx));
+        return;
+    end
     n:push(screens.placeholder(name, 'Screen scaffolding — commands arrive in feature PRs.'));
 end
 
