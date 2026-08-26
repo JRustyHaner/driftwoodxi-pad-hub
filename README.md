@@ -23,6 +23,10 @@ Search fields stay at the **top** of the window so Steam Deck OSK does not cover
 
 Scaffold only — planning next.
 
+## Contributing / agent workflow
+
+All work follows **issue → branch → code → test → document → PR → merge**. See [AGENTS.md](./AGENTS.md).
+
 ## Install (later)
 
 Copy the addon folder into Ashita `addons/`, enable in your boot script or `/addon load …`.
