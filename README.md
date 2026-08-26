@@ -6,22 +6,24 @@ Opens a D-pad navigable hub (macro / bind to toggle) that issues the same typed 
 
 ## Goals (MVP)
 
-- **Squad** — call / dismiss
-- **Jobs** — use presets (then set jobs)
+- **Squad** — call / dismiss / set / field orders / behavior
+- **Jobs** — full job list for main/sub + presets
+- **Items** — find / send / fetch / equip
 - **Rules** — assign gambit presets
 - **Port** — home, list tabs, go
-- **Items** — send / fetch / equip (after MVP)
 
 Search fields stay at the **top** of the window so Steam Deck OSK does not cover them. Select can stay on OSK; open the hub from a macro.
+
+Menu trees and pad rules: **[docs/UX.md](./docs/UX.md)**. Chrome mock: **[docs/mockups/ffxi-hub-chrome.html](./docs/mockups/ffxi-hub-chrome.html)**.
 
 ## Non-goals
 
 - Real FFXI event menus (`!squad menu` style) — those are server-side
-- Full gambit rule editing, parse, report, etc.
+- Full gambit rule editing, merc, craft, parse, report, etc.
 
 ## Status
 
-Scaffold only — planning next.
+Scaffolding in progress (docs → addon → CI → nav → features).
 
 ## Contributing / agent workflow
 
@@ -35,3 +37,4 @@ Copy the addon folder into Ashita `addons/`, enable in your boot script or `/add
 
 - Deck launch helpers: [driftwoodxi-steamdeck](https://github.com/JRustyHaner/driftwoodxi-steamdeck) (if applicable)
 - Typed commands: https://xi.driftwoodgaming.com/commands
+- Allowed addons: https://xi.driftwoodgaming.com/addons
