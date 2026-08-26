@@ -39,6 +39,8 @@ While the hub is open, dwhub best-effort disables FFXI’s gamepad so A/B/D-pad 
 1. `/dwhub` → Home lists Squad / Jobs / Items / Rules / Port  
 2. Squad → Call → status shows queue; chat eventually gets `!squad call`  
 3. B back to Home; B closes hub  
-4. Character does not walk while hub is focused  
+4. Character does not walk while hub is focused
+
+Full checklist: [ACCEPTANCE.md](./ACCEPTANCE.md).
 
 Full checklist: [ACCEPTANCE.md](./ACCEPTANCE.md).
