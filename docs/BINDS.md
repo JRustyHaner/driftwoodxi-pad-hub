@@ -27,9 +27,14 @@ The hub toggles with `/dwhub` (alias `/hub`). Keep **Select** on Steam Deck’s 
 
 ## While the hub is open
 
-`dwhub` best-effort disables FFXI gamepad consumption (`SetDisableGamepad`) so A/B/D-pad do not move the character. Closing `/dwhub` restores the previous setting.
+`dwhub` best-effort:
 
-If pad input still leaks on your build, drive the hub with **arrow keys / Enter / Esc** (Steam Input can mirror D-pad → arrows for the hub chord only).
+- Disables FFXI **gamepad** consumption (`SetDisableGamepad`) so A/B/D-pad do not move the character
+- Blocks FFXI **keyboard** consumption (`IKeyboard:SetBlockInput`) so arrows / Enter / Esc drive the hub instead of menus or movement
+
+Closing `/dwhub` restores both previous settings. ImGui still receives those keys for hub nav and top search fields.
+
+If input still leaks on your build, say so in an issue (Ashita build + Desktop vs Deck).
 
 ## OSK and search
 

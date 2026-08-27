@@ -25,6 +25,7 @@ local input = require('input');
 
 local state = {
     open = { false },
+    focus_once = false,
 };
 
 local nav = navmod.new();
@@ -85,10 +86,12 @@ local function set_open(value)
     if (state.open[1]) then
         ensure_root();
         input.capture(true);
+        state.focus_once = true;
     else
         input.capture(false);
         cmd_queue:clear();
         nav:reset(nil);
+        state.focus_once = false;
     end
 end
 
@@ -105,6 +108,16 @@ local function key_pressed(key)
 end
 
 local function handle_input()
+    -- While typing in the top field, do not steal arrows/Enter for list nav.
+    if (imgui.IsAnyItemActive ~= nil and imgui.IsAnyItemActive()) then
+        if (key_pressed(ImGuiKey_Escape) or key_pressed(ImGuiKey_GamepadFaceRight)) then
+            local result = nav:back();
+            if (result == 'close') then
+                set_open(false);
+            end
+        end
+        return;
+    end
     if (key_pressed(ImGuiKey_UpArrow) or key_pressed(ImGuiKey_GamepadDpadUp)) then
         nav:move(-1);
     end
@@ -161,6 +174,10 @@ end
 local function draw_window()
     imgui.SetNextWindowSize({ 520, 360 }, ImGuiCond_FirstUseEver);
     imgui.SetNextWindowPos({ 40, 60 }, ImGuiCond_FirstUseEver);
+    if (state.focus_once) then
+        imgui.SetNextWindowFocus();
+        state.focus_once = false;
+    end
 
     local visible = imgui.Begin('DriftwoodXI Pad Hub##dwhub', state.open, bit.bor(ImGuiWindowFlags_NoCollapse, ImGuiWindowFlags_NoScrollbar));
     if (visible) then

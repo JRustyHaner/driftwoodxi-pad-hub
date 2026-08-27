@@ -12,8 +12,8 @@ Manual verification (CI cannot boot FFXI). Run on Steam Deck Game Mode or Deskto
 
 - [ ] D-pad / arrows move focus; yellow selection + description panel update
 - [ ] A / Enter confirms; B / Esc backs; B on Home closes
-- [ ] While open, character does not move / stock menu does not eat A/B (best-effort)
-- [ ] Closing restores normal pad control
+- [ ] While open, character does not move / stock menu does not eat A/B / arrows / Enter / Esc (gamepad + keyboard block)
+- [ ] Closing restores normal pad and keyboard control
 
 ## Squad
 
