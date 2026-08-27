@@ -170,6 +170,10 @@ function M.dwq_find(text)
     return string.format('!dwq find %s', text);
 end
 
+function M.dwq_bag(char)
+    return string.format('!dwq bag %s', char);
+end
+
 function M.dwq_send(char, itemid, qty)
     qty = qty or 1;
     return string.format('!dwq send %s %d %d', char, itemid, qty);

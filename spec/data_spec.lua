@@ -66,4 +66,17 @@ describe('data machine parse', function()
         assert.equals('1', dests[1].id);
         assert.is_false(dests[2].usable);
     end);
+
+    it('parses bag containers and items from _DWDATA', function()
+        data.state().bag_charid = 10;
+        data.handle_machine('_DWDATA', 'd|1|bag');
+        data.handle_machine('_DWDATA', 'n|10|0|2|30');
+        data.handle_machine('_DWDATA', 'i|10|0|1:4096:5:0');
+        data.handle_machine('_DWDATA', 'z|');
+        local locs = data.bag_locations();
+        assert.equals(1, #locs);
+        assert.equals('Inventory', locs[1].label);
+        assert.equals(1, #data.bag_items(0));
+        assert.equals('Fire Crystal', data.bag_items(0)[1].name);
+    end);
 end);

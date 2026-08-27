@@ -172,7 +172,145 @@ local function pick_character(ctx, title, char_opts, on_pick)
     });
 end
 
-local function find_results_screen(ctx, title, on_pick_entry)
+local PAGE_SIZE = 8;
+
+local find_results_screen -- forward decl (browse → find)
+
+--- Paged items inside one bag container.
+local function bag_items_page_screen(ctx, owner_name, loc, loc_label, on_pick_entry)
+    local page = { 1 };
+    local buf = { '' };
+    return {
+        id = 'bagitems:' .. tostring(loc),
+        title = loc_label,
+        search = buf,
+        rows = function()
+            local q = buf[1] or '';
+            local all = {};
+            for _, e in ipairs(data.bag_items(loc)) do
+                local label = string.format('%s ×%d', e.name or ('item ' .. e.itemid), e.qty or 1);
+                if (filter_match(label, q) or filter_match(e.name or '', q)) then
+                    all[#all + 1] = { entry = e, label = label };
+                end
+            end
+            local pages = math.max(1, math.ceil(#all / PAGE_SIZE));
+            if (page[1] > pages) then
+                page[1] = pages;
+            end
+            local rows = {
+                { id = '__refresh', label = 'Refresh bag', desc = 'Reload !dwq bag for ' .. owner_name },
+            };
+            if (page[1] > 1) then
+                rows[#rows + 1] = { id = '__prev', label = '◀ Previous page', desc = 'Page ' .. (page[1] - 1) };
+            end
+            local start_i = (page[1] - 1) * PAGE_SIZE + 1;
+            local stop_i = math.min(#all, page[1] * PAGE_SIZE);
+            if (#all == 0) then
+                rows[#rows + 1] = { id = '__empty', label = '(Empty — Refresh or pick another bag)', dim = true, desc = 'No items in this container yet.' };
+            else
+                rows[#rows + 1] = {
+                    id = '__meta',
+                    label = string.format('Page %d / %d  (%d items)', page[1], pages, #all),
+                    dim = true,
+                    desc = 'Filter with the top field; D-pad through pages.',
+                };
+                for i = start_i, stop_i do
+                    local hit = all[i];
+                    rows[#rows + 1] = {
+                        id = 'hit',
+                        label = hit.label,
+                        desc = string.format('%s · itemid %d', owner_name, hit.entry.itemid),
+                        entry = hit.entry,
+                        owner = owner_name,
+                    };
+                end
+            end
+            if (page[1] < pages) then
+                rows[#rows + 1] = { id = '__next', label = 'Next page ▶', desc = 'Page ' .. (page[1] + 1) };
+            end
+            return rows;
+        end,
+        on_confirm = function(self, index, n)
+            local row = self:rows()[index];
+            if (row == nil) then return; end
+            if (row.id == '__refresh') then
+                data.request_bag(ctx.enqueue, owner_name);
+                ctx.set_status('Loading bags for ' .. owner_name);
+                return;
+            end
+            if (row.id == '__prev') then
+                page[1] = math.max(1, page[1] - 1);
+                return;
+            end
+            if (row.id == '__next') then
+                page[1] = page[1] + 1;
+                return;
+            end
+            if (row.id == '__empty' or row.id == '__meta') then
+                return;
+            end
+            on_pick_entry(row.entry, n, row.owner);
+        end,
+    };
+end
+
+--- Character's bags → container list → paged items.
+local function browse_bags_screen(ctx, owner_name, on_pick_entry)
+    data.request_roster(ctx.enqueue);
+    data.request_bag(ctx.enqueue, owner_name);
+    local buf = { '' };
+    return {
+        id = 'bags:' .. owner_name,
+        title = 'Bags — ' .. owner_name,
+        search = buf,
+        rows = function()
+            local q = buf[1] or '';
+            local rows = {
+                { id = '__refresh', label = 'Refresh bags', desc = 'Queue !dwq bag ' .. owner_name },
+                { id = '__find', label = 'Find instead…', desc = 'Account-wide search shortcut.' },
+            };
+            local locs = data.bag_locations();
+            local matched = 0;
+            for _, loc in ipairs(locs) do
+                local label = string.format('%s  (%d/%d)', loc.label, loc.used, loc.size);
+                if (loc.size == 0 and loc.count > 0) then
+                    label = string.format('%s  (%d items)', loc.label, loc.count);
+                end
+                if (filter_match(label, q) or filter_match(loc.label, q)) then
+                    rows[#rows + 1] = {
+                        id = 'loc',
+                        label = label,
+                        desc = 'Open paged item list.',
+                        loc = loc.loc,
+                        loc_label = loc.label,
+                    };
+                    matched = matched + 1;
+                end
+            end
+            if (matched == 0) then
+                rows[#rows + 1] = { id = '__empty', label = '(No bags yet — Refresh)', dim = true, desc = 'Wait for !dwq bag reply, then Refresh.' };
+            end
+            return rows;
+        end,
+        on_confirm = function(self, index, n)
+            local row = self:rows()[index];
+            if (row == nil) then return; end
+            if (row.id == '__refresh') then
+                data.request_bag(ctx.enqueue, owner_name);
+                ctx.set_status('Loading bags for ' .. owner_name);
+                return;
+            end
+            if (row.id == '__find') then
+                n:push(find_results_screen(ctx, 'Find', on_pick_entry));
+                return;
+            end
+            if (row.id == '__empty') then return; end
+            n:push(bag_items_page_screen(ctx, owner_name, row.loc, row.loc_label, on_pick_entry));
+        end,
+    };
+end
+
+find_results_screen = function(ctx, title, on_pick_entry)
     local buf = { '' };
     return {
         id = 'find:' .. title,
@@ -572,13 +710,46 @@ function M.items(ctx)
         return_to_category(n);
     end
 
-    local function transfer_flow(n, mode)
-        local title = (mode == 'send') and 'Send to' or 'Fetch from';
-        n:push(pick_character(ctx, title, { me = false }, function(char, nav)
-            nav:push(find_results_screen(ctx, 'Item', function(entry, nav2)
-                after_item_for_transfer(mode, char, entry, nav2);
+    local function item_actions(entry, owner, nav)
+        nav:push(pick_list('Action', { 'Send to…', 'Fetch from…', 'Done' }, function(action, nav2)
+            if (action == 'Done') then
+                return_to_category(nav2);
+                return;
+            end
+            local mode = (action == 'Send to…') and 'send' or 'fetch';
+            nav2:push(pick_character(ctx, mode == 'send' and 'Send to' or 'Fetch from', { me = false }, function(char, nav3)
+                after_item_for_transfer(mode, char, entry, nav3);
             end));
         end));
+    end
+
+    --- Browse someone's bags (paged). For Send: browse source then pick target, etc.
+    local function browse_flow(n)
+        n:push(pick_character(ctx, 'Whose bags', { me = true }, function(owner, nav)
+            nav:push(browse_bags_screen(ctx, owner, function(entry, nav2, owner_name)
+                item_actions(entry, owner_name or owner, nav2);
+            end));
+        end));
+    end
+
+    local function transfer_flow(n, mode)
+        if (mode == 'send') then
+            -- Browse source bags (usually me), pick item, then destination is chosen… 
+            -- Simpler: pick destination first, then browse me/source bags for the item.
+            n:push(pick_character(ctx, 'Send to', { me = false }, function(dest, nav)
+                nav:push(pick_character(ctx, 'From whose bags', { me = true }, function(owner, nav2)
+                    nav2:push(browse_bags_screen(ctx, owner, function(entry, nav3)
+                        after_item_for_transfer('send', dest, entry, nav3);
+                    end));
+                end));
+            end));
+        else
+            n:push(pick_character(ctx, 'Fetch from', { me = false }, function(source, nav)
+                nav:push(browse_bags_screen(ctx, source, function(entry, nav2)
+                    after_item_for_transfer('fetch', source, entry, nav2);
+                end));
+            end));
+        end
     end
 
     local function equip_flow(n)
@@ -592,7 +763,8 @@ function M.items(ctx)
                         return {
                             { id = 'auto', label = 'auto', desc = 'Best available for this slot.' },
                             { id = 'none', label = 'none', desc = 'Empty / unpin this slot.' },
-                            { id = '__search', label = 'Search bags…', desc = 'Find an item then equip by id.' },
+                            { id = '__browse', label = 'Browse bags…', desc = 'Paged bag list — no search required.' },
+                            { id = '__search', label = 'Find…', desc = 'Account-wide find shortcut.' },
                             { id = '__type', label = 'Type name…', desc = 'Typed !squad equip fallback.' },
                         };
                     end,
@@ -611,15 +783,20 @@ function M.items(ctx)
                             end));
                             return;
                         end
+                        local function apply_equip(entry, nav4)
+                            if (entry.itemid ~= nil) then
+                                fire(ctx, cmds.dwq_equip(char, slot, entry.itemid), string.format('Equip %s %s → %s', char, slot, entry.name));
+                            else
+                                fire(ctx, cmds.squad_equip(char, slot, entry.name), string.format('Equip %s %s → %s', char, slot, entry.name));
+                            end
+                            return_to_category(nav4);
+                        end
+                        if (row.id == '__browse') then
+                            nav3:push(browse_bags_screen(ctx, char, apply_equip));
+                            return;
+                        end
                         if (row.id == '__search') then
-                            nav3:push(find_results_screen(ctx, 'Equip item', function(entry, nav4)
-                                if (entry.itemid ~= nil) then
-                                    fire(ctx, cmds.dwq_equip(char, slot, entry.itemid), string.format('Equip %s %s → %s', char, slot, entry.name));
-                                else
-                                    fire(ctx, cmds.squad_equip(char, slot, entry.name), string.format('Equip %s %s → %s', char, slot, entry.name));
-                                end
-                                return_to_category(nav4);
-                            end));
+                            nav3:push(find_results_screen(ctx, 'Equip item', apply_equip));
                         end
                     end,
                 });
@@ -631,13 +808,14 @@ function M.items(ctx)
         id = 'items',
         title = 'Items',
         rows = action_rows({
+            { id = 'browse', label = 'Browse bags…', desc = 'Character → bag → paged item list (no search).' },
             { id = 'who', label = 'Who', desc = 'Account bag fullness (!squad who).' },
             { id = 'find', label = 'Find…', desc = 'Search at top → pick from results.' },
-            { id = 'send', label = 'Send…', desc = 'Target character → find → send.' },
-            { id = 'fetch', label = 'Fetch…', desc = 'Source character → find → fetch.' },
+            { id = 'send', label = 'Send…', desc = 'Destination → browse bags → send.' },
+            { id = 'fetch', label = 'Fetch…', desc = 'Source bags → pick item → fetch.' },
             { id = 'box', label = 'In transit…', desc = '!squad box' },
             { id = 'gear', label = 'Gear…', desc = 'Show gear plan for a character.' },
-            { id = 'equip', label = 'Equip…', desc = 'Character → slot → auto / find / none.' },
+            { id = 'equip', label = 'Equip…', desc = 'Character → slot → auto / browse / find.' },
             { id = 'unpin', label = 'Unpin all…', desc = 'Clear pins on a character.' },
             { id = 'opt', label = 'Optimize me', desc = '!optimizegear on the logged-in character.' },
         }),
@@ -645,21 +823,14 @@ function M.items(ctx)
             local row = self:rows()[index];
             if (row == nil) then return; end
             local id = row.id;
-            if (id == 'who') then
+            if (id == 'browse') then
+                browse_flow(n);
+            elseif (id == 'who') then
                 data.request_roster(ctx.enqueue);
                 fire(ctx, cmds.squad_who(), 'Who → chat.');
             elseif (id == 'find') then
-                n:push(find_results_screen(ctx, 'Find', function(entry, nav)
-                    nav:push(pick_list('Action', { 'Send to…', 'Fetch from…', 'Done' }, function(action, nav2)
-                        if (action == 'Done') then
-                            return_to_category(nav2);
-                            return;
-                        end
-                        local mode = (action == 'Send to…') and 'send' or 'fetch';
-                        nav2:push(pick_character(ctx, mode == 'send' and 'Send to' or 'Fetch from', { me = false }, function(char, nav3)
-                            after_item_for_transfer(mode, char, entry, nav3);
-                        end));
-                    end));
+                n:push(find_results_screen(ctx, 'Find', function(entry, nav, owner)
+                    item_actions(entry, owner, nav);
                 end));
             elseif (id == 'send') then transfer_flow(n, 'send');
             elseif (id == 'fetch') then transfer_flow(n, 'fetch');

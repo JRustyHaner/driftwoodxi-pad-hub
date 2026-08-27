@@ -43,6 +43,9 @@ local function new_state()
     return {
         chars = {},           -- array { charid, name, flags, slot, mjob, mlvl }
         finds = {},           -- array { charid, loc, itemid, qty, name }
+        bags = {},            -- [loc] = { used, size, items = { entry... } }
+        bag_charid = nil,     -- whose bags we last requested / are filling
+        bag_charname = nil,
         job_presets = {},     -- array of names
         rule_sets = {},       -- map name -> true
         rule_presets = {},    -- map name -> true
@@ -57,6 +60,15 @@ local function new_state()
         },
     };
 end
+
+-- Container ids, matching dwbags / server item_container.h.
+M.LOC_NAMES = {
+    [0]  = 'Inventory', [1]  = 'Mog Safe',  [2]  = 'Storage',   [3]  = 'Temp',
+    [4]  = 'Locker',    [5]  = 'Satchel',   [6]  = 'Sack',      [7]  = 'Case',
+    [8]  = 'Wardrobe',  [9]  = 'Mog Safe 2',[10] = 'Wardrobe 2',[11] = 'Wardrobe 3',
+    [12] = 'Wardrobe 4',[13] = 'Wardrobe 5',[14] = 'Wardrobe 6',[15] = 'Wardrobe 7',
+    [16] = 'Wardrobe 8',[17] = 'Recycle Bin',
+};
 
 local state = new_state();
 local item_name_fn = nil;
@@ -144,6 +156,8 @@ local function handle_squad_or_bags_or_jobs(channel, line)
             end
         elseif (inbound.verb == 'find' and channel == 'bags') then
             state.finds = {};
+        elseif (inbound.verb == 'bag' and channel == 'bags') then
+            state.bags = {};
         elseif (inbound.verb == 'list' and channel == 'jobs') then
             state.job_presets = {};
         end
@@ -198,6 +212,25 @@ local function handle_squad_or_bags_or_jobs(channel, line)
         local loc = tonumber(parts[3]) or 0;
         parse_packed(charid, loc, parts[4], state.finds);
         return;
+    end
+
+    if (channel == 'bags' and inbound.verb == 'bag') then
+        local charid = tonumber(parts[2]) or 0;
+        if (state.bag_charid ~= nil and charid ~= state.bag_charid) then
+            return;
+        end
+        local loc = tonumber(parts[3]) or 0;
+        if (kind == 'n') then
+            state.bags[loc] = state.bags[loc] or { used = 0, size = 0, items = {} };
+            state.bags[loc].used = tonumber(parts[4]) or 0;
+            state.bags[loc].size = tonumber(parts[5]) or 0;
+            return;
+        end
+        if (kind == 'i') then
+            state.bags[loc] = state.bags[loc] or { used = 0, size = 0, items = {} };
+            parse_packed(charid, loc, parts[4], state.bags[loc].items);
+            return;
+        end
     end
 end
 
@@ -348,6 +381,38 @@ function M.find_entries()
     return state.finds;
 end
 
+function M.bag_locations()
+    local locs = {};
+    for loc, bag in pairs(state.bags) do
+        local count = #(bag.items or {});
+        if (count > 0 or (bag.used or 0) > 0 or (bag.size or 0) > 0) then
+            locs[#locs + 1] = {
+                loc = loc,
+                label = M.LOC_NAMES[loc] or ('Bag ' .. tostring(loc)),
+                used = bag.used or 0,
+                size = bag.size or 0,
+                count = count,
+            };
+        end
+    end
+    table.sort(locs, function(a, b)
+        return a.loc < b.loc;
+    end);
+    return locs;
+end
+
+function M.bag_items(loc)
+    local bag = state.bags[loc];
+    if (bag == nil or bag.items == nil) then
+        return {};
+    end
+    return bag.items;
+end
+
+function M.bag_owner()
+    return state.bag_charname, state.bag_charid;
+end
+
 function M.port_entries()
     return state.port_dests;
 end
@@ -385,6 +450,33 @@ function M.request_find(enqueue, text)
     if (enqueue ~= nil and text ~= nil and text ~= '') then
         enqueue(string.format('!dwq find %s', text));
     end
+end
+
+function M.request_bag(enqueue, charname)
+    if (enqueue == nil or charname == nil or charname == '') then
+        return;
+    end
+    local charid = nil;
+    for _, c in ipairs(state.chars) do
+        if (c.name == charname) then
+            charid = c.charid;
+            break;
+        end
+    end
+    -- 'me' → prefer CHAR_SELF from roster
+    if (charname == 'me') then
+        for _, c in ipairs(state.chars) do
+            if (math.floor((c.flags or 0) / CHAR_SELF) % 2 == 1) then
+                charid = c.charid;
+                charname = c.name;
+                break;
+            end
+        end
+    end
+    state.bag_charid = charid;
+    state.bag_charname = charname;
+    state.bags = {};
+    enqueue(string.format('!dwq bag %s', charname));
 end
 
 function M.request_rule_sets(enqueue)

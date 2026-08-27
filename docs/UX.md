@@ -75,12 +75,13 @@ Or `/addon unload dwhub` then `/addon load dwhub`. No client restart.
 | Row | Flow |
 |-----|------|
 | Who | `!squad who` (+ roster refresh) |
-| Find… | Top filter → Search (`!dwq find`) → **result list** → Send / Fetch |
-| Send… | **Roster** → Find results → `!dwq send` (id) |
-| Fetch… | **Roster** → Find results → `!dwq fetch` (id) |
+| Browse bags… | **Roster** → bag containers → **paged item list** → Send / Fetch |
+| Find… | Top filter → Search (`!dwq find`) → result list → Send / Fetch |
+| Send… | Destination → browse source bags → `!dwq send` |
+| Fetch… | Source bags → pick item → `!dwq fetch` |
 | In transit… | `!squad box` |
 | Gear… | **Roster** → `!squad gear` |
-| Equip… | **Roster** → slot → auto / none / find / type → `!dwq equip` |
+| Equip… | **Roster** → slot → auto / none / browse / find → `!dwq equip` |
 | Unpin all… | **Roster** → `!squad unpin` |
 | Optimize me | `!optimizegear` (preview when easy) |
 
