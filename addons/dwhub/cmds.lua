@@ -153,4 +153,47 @@ function M.optimizegear()
     return '!optimizegear';
 end
 
+-- Machine-channel reads / id-based bag writes (same dispatch as dw* windows).
+function M.dws_who()
+    return '!dws who';
+end
+
+function M.dwj_who()
+    return '!dwj who';
+end
+
+function M.dwj_list()
+    return '!dwj list';
+end
+
+function M.dwq_find(text)
+    return string.format('!dwq find %s', text);
+end
+
+function M.dwq_bag(char)
+    return string.format('!dwq bag %s', char);
+end
+
+function M.dwq_send(char, itemid, qty)
+    qty = qty or 1;
+    return string.format('!dwq send %s %d %d', char, itemid, qty);
+end
+
+function M.dwq_fetch(char, itemid, qty)
+    qty = qty or 1;
+    return string.format('!dwq fetch %s %d %d', char, itemid, qty);
+end
+
+function M.dwq_equip(char, slot, itemid_or_token)
+    return string.format('!dwq equip %s %s %s', char, slot, tostring(itemid_or_token));
+end
+
+function M.dwg_list()
+    return '!dwg list';
+end
+
+function M.dwg_presets()
+    return '!dwg presets';
+end
+
 return M;
