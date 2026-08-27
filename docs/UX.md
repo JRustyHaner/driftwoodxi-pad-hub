@@ -12,10 +12,21 @@ Controller-first Ashita overlay for DriftwoodXI. Chrome reference: [mockups/ffxi
 | Macro / bind | Toggle `/dwhub` (Select stays on Steam Deck OSK) |
 
 - Target frame: **1280×720**
-- Search fields at the **top** of the active window (OSK rises from the bottom)
+- Search / filter fields at the **top** of the active window (OSK rises from the bottom)
+- **Pick lists** for characters, find results, presets, rule sets, and port destinations (live from Driftwood machine / list replies). **Type name…** is a fallback only.
 - Footer hint: `A Confirm  B Back` (Home: `B Close`)
 - Focused row: yellow text + white hand cursor; description panel explains the row
 - Vertical lists only (pad-friendly); mock’s horizontal FFXI bar is chrome inspiration, not primary nav
+
+## Hot reload
+
+After copying updated Lua into Ashita `addons/dwhub/`:
+
+```
+/addon reload dwhub
+```
+
+Or `/addon unload dwhub` then `/addon load dwhub`. No client restart.
 
 ## Home
 
@@ -34,7 +45,7 @@ Controller-first Ashita overlay for DriftwoodXI. Chrome reference: [mockups/ffxi
 | Call | `!squad call` |
 | Dismiss | `!squad dismiss` |
 | List | Show `!squad list` (read-only) |
-| Set slot… | Slot 1–5 → character → `!squad set N Name` |
+| Set slot… | Slot 1–5 → **roster list** → `!squad set N Name` |
 | Clear slot… | Slot 1–5 → `!squad clear N` |
 | Engage | `!squad engage` |
 | Disengage | `!squad disengage` |
@@ -48,10 +59,10 @@ Controller-first Ashita overlay for DriftwoodXI. Chrome reference: [mockups/ffxi
 
 | Row | Flow |
 |-----|------|
-| Change jobs… | Character → Main (full list) → Sub (full list or None) → `!jobs set <char> <main> [sub\|none]` |
-| Use preset… | `!jobs list` → `!jobs use <name>` |
+| Change jobs… | **Roster** → Main (full list) → Sub (full list or None) → `!jobs set <char> <main> [sub\|none]` |
+| Use preset… | **Preset list** (`!dwj`) → `!jobs use <name>` |
 | Save preset… | Name (top field / OSK) → `!jobs save <name>` |
-| Delete preset… | Pick → `!jobs delete <name>` |
+| Delete preset… | **Preset list** → `!jobs delete <name>` |
 
 **Job list** (always show; grey locked):
 
@@ -63,15 +74,14 @@ Controller-first Ashita overlay for DriftwoodXI. Chrome reference: [mockups/ffxi
 
 | Row | Flow |
 |-----|------|
-| Who | `!squad who` |
-| Find… | Search at **top** → Send / Fetch on row |
-| Browse bags… | Character → bag page → Send / Fetch |
-| Send… | Target → item → qty → `!squad send` |
-| Fetch… | Source → item → qty → `!squad fetch` |
+| Who | `!squad who` (+ roster refresh) |
+| Find… | Top filter → Search (`!dwq find`) → **result list** → Send / Fetch |
+| Send… | **Roster** → Find results → `!dwq send` (id) |
+| Fetch… | **Roster** → Find results → `!dwq fetch` (id) |
 | In transit… | `!squad box` |
-| Gear… | Character → `!squad gear` |
-| Equip… | Character → slot → item / Auto / Empty → `!squad equip` |
-| Unpin all… | Character → `!squad unpin` |
+| Gear… | **Roster** → `!squad gear` |
+| Equip… | **Roster** → slot → auto / none / find / type → `!dwq equip` |
+| Unpin all… | **Roster** → `!squad unpin` |
 | Optimize me | `!optimizegear` (preview when easy) |
 
 **Equip slots:** `main sub ranged ammo head body hands legs feet neck waist ear1 ear2 ring1 ring2 back`
@@ -85,11 +95,11 @@ Qty default `1`.
 | Row | Flow |
 |-----|------|
 | What’s running | `!squad rules` (read-only) |
-| Assign set… | Member or `all` → set → `!squad rules use <member> <set>` |
+| Assign set… | **Roster** (`me` / chars / `all`) → **set/preset list** → `!squad rules use` |
 | Assign when job… | Member → set → job → `!squad rules use … when <job>` |
 | Behavior… | Same four profiles as Squad |
 
-Sets = shipped (`!squad rules presets`) + account (`!squad rules list`). No rule editing in hub.
+Sets = shipped (`!dwg presets`) + account (`!dwg list`). No rule editing in hub.
 
 ---
 
@@ -98,10 +108,10 @@ Sets = shipped (`!squad rules presets`) + account (`!squad rules list`). No rule
 | Row | Flow |
 |-----|------|
 | Home nation | `!port home` / `!home` |
-| Home points… | `!port list hp` → `!port go hp …` |
+| Home points… | `!port list hp` → **destination list** → `!port go hp …` |
 | Survival guides… | `!port list sg` → Go |
 | Outposts… | `!port list op` → Go |
 | Teleport spells… | `!port list sp` → Go |
-| Search… | Field at **top**; filter / unambiguous `!port <name>` |
+| Search… | Field at **top**; unambiguous `!port <name>` |
 
 Unusable destinations dimmed; cannot Go.

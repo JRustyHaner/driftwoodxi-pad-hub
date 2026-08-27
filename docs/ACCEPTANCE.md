@@ -12,8 +12,10 @@ Manual verification (CI cannot boot FFXI). Run on Steam Deck Game Mode or Deskto
 
 - [ ] D-pad / arrows move focus; yellow selection + description panel update
 - [ ] A / Enter confirms; B / Esc backs; B on Home closes
+- [ ] Character / item / preset picks are **lists** (Refresh works); Type name… only as fallback
 - [ ] While open, character does not move / stock menu does not eat A/B (best-effort)
 - [ ] Closing restores normal pad control
+- [ ] `/addon reload dwhub` picks up Lua copies without restart
 
 ## Squad
 

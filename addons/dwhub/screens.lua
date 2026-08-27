@@ -1,10 +1,12 @@
 --[[
-* Hub screens: Home + category menus.
+* Hub screens: Home + category menus with live pick lists.
 *
 * ctx = { enqueue = function(cmd), set_status = function(msg) }
+* Character / item / preset / port picks come from data.lua caches.
 --]]
 
 local cmds = require('cmds');
+local data = require('data');
 
 local M = {};
 
@@ -39,6 +41,13 @@ local function fire(ctx, command, ok_msg)
     if (ctx.set_status ~= nil) then
         ctx.set_status(ok_msg or ('Queued: ' .. command));
     end
+end
+
+local function filter_match(label, query)
+    if (query == nil or query == '') then
+        return true;
+    end
+    return string.find(string.lower(label or ''), string.lower(query), 1, true) ~= nil;
 end
 
 local function pick_list(title, labels, on_pick)
@@ -89,6 +98,148 @@ local function text_entry(title, desc, initial, on_submit)
     };
 end
 
+local function live_pick(ctx, title, get_labels, on_pick, opts)
+    opts = opts or {};
+    local buf = { '' };
+    local empty_hint = opts.empty or 'Waiting for server list…';
+
+    return {
+        id = 'live:' .. title,
+        title = title,
+        search = buf,
+        rows = function()
+            local q = buf[1] or '';
+            local rows = {};
+            if (opts.refresh ~= nil) then
+                rows[#rows + 1] = { id = '__refresh', label = 'Refresh list', desc = opts.refresh_desc or 'Ask the server again.' };
+            end
+            local labels = get_labels() or {};
+            local matched = 0;
+            for _, lab in ipairs(labels) do
+                if (filter_match(lab, q)) then
+                    rows[#rows + 1] = { id = 'item', label = lab, desc = 'Select ' .. lab, value = lab };
+                    matched = matched + 1;
+                end
+            end
+            if (matched == 0) then
+                rows[#rows + 1] = { id = '__empty', label = '(' .. empty_hint .. ')', dim = true, desc = empty_hint };
+            end
+            if (opts.type_fallback) then
+                rows[#rows + 1] = { id = '__type', label = 'Type name…', desc = 'Keyboard / OSK fallback.' };
+            end
+            return rows;
+        end,
+        on_confirm = function(self, index, n)
+            local row = self:rows()[index];
+            if (row == nil) then
+                return;
+            end
+            if (row.id == '__refresh') then
+                if (opts.refresh ~= nil) then
+                    opts.refresh();
+                end
+                if (ctx ~= nil and ctx.set_status ~= nil) then
+                    ctx.set_status('Refreshing…');
+                end
+                return;
+            end
+            if (row.id == '__empty') then
+                return;
+            end
+            if (row.id == '__type') then
+                n:push(text_entry(title, 'Type a name.', '', function(text, nav)
+                    on_pick(text, nav);
+                end));
+                return;
+            end
+            on_pick(row.value or row.label, n);
+        end,
+    };
+end
+
+local function pick_character(ctx, title, char_opts, on_pick)
+    char_opts = char_opts or { me = true };
+    data.request_roster(ctx.enqueue);
+    return live_pick(ctx, title, function()
+        return data.char_labels(char_opts);
+    end, on_pick, {
+        refresh = function()
+            data.request_roster(ctx.enqueue);
+        end,
+        refresh_desc = 'Queue !dws who for the account roster.',
+        type_fallback = true,
+        empty = 'No characters yet — Refresh',
+    });
+end
+
+local function find_results_screen(ctx, title, on_pick_entry)
+    local buf = { '' };
+    return {
+        id = 'find:' .. title,
+        title = title,
+        search = buf,
+        rows = function()
+            local q = buf[1] or '';
+            local rows = {
+                { id = '__search', label = 'Search', desc = 'Run find with the text above (!dwq find).' },
+            };
+            local matched = 0;
+            for _, e in ipairs(data.find_entries()) do
+                local owner = '?';
+                for _, c in ipairs(data.state().chars) do
+                    if (c.charid == e.charid) then
+                        owner = c.name;
+                        break;
+                    end
+                end
+                local label = string.format('%s ×%d  (%s)', e.name or ('item ' .. e.itemid), e.qty or 1, owner);
+                if (filter_match(label, q) or filter_match(e.name or '', q)) then
+                    rows[#rows + 1] = {
+                        id = 'hit',
+                        label = label,
+                        desc = string.format('itemid %d · charid %d', e.itemid, e.charid),
+                        entry = e,
+                        owner = owner,
+                    };
+                    matched = matched + 1;
+                end
+            end
+            if (matched == 0) then
+                rows[#rows + 1] = { id = '__empty', label = '(No results — Search above)', dim = true, desc = 'Type a query at the top, then Search.' };
+            end
+            rows[#rows + 1] = { id = '__type', label = 'Type item name…', desc = 'Fallback without find results.' };
+            return rows;
+        end,
+        on_confirm = function(self, index, n)
+            local row = self:rows()[index];
+            if (row == nil) then
+                return;
+            end
+            if (row.id == '__search') then
+                local q = (buf[1] or ''):gsub('^%s+', ''):gsub('%s+$', '');
+                if (q == '') then
+                    ctx.set_status('Enter search text at the top.');
+                    return;
+                end
+                data.request_roster(ctx.enqueue);
+                data.request_find(ctx.enqueue, q);
+                ctx.set_status('Finding: ' .. q);
+                return;
+            end
+            if (row.id == '__empty') then
+                return;
+            end
+            if (row.id == '__type') then
+                n:push(text_entry('Item name', 'Typed item name.', '', function(text, nav)
+                    on_pick_entry({ name = text, itemid = nil, typed = true }, nav);
+                end));
+                return;
+            end
+            on_pick_entry(row.entry, n, row.owner);
+        end,
+    };
+end
+
 function M.squad(ctx)
     local function behavior_menu(n)
         n:push(pick_list('Behavior', cmds.BEHAVIORS, function(profile, nav)
@@ -106,10 +257,10 @@ function M.squad(ctx)
 
     local function set_slot_menu(n)
         n:push(pick_list('Set slot', { '1', '2', '3', '4', '5' }, function(slot, nav)
-            nav:push(text_entry('Character name', 'Name of your character for slot ' .. slot, '', function(name, nav2)
+            nav:push(pick_character(ctx, 'Character for slot ' .. slot, { me = false }, function(name, nav2)
                 fire(ctx, cmds.squad_set(tonumber(slot), name), string.format('Set %s → slot %s', name, slot));
-                nav2:pop(); -- text
-                nav2:pop(); -- slot pick
+                nav2:pop();
+                nav2:pop();
             end));
         end));
     end
@@ -137,7 +288,9 @@ function M.squad(ctx)
             local id = row.id;
             if (id == 'call') then fire(ctx, cmds.squad_call(), 'Calling squad…');
             elseif (id == 'dismiss') then fire(ctx, cmds.squad_dismiss(), 'Dismissing…');
-            elseif (id == 'list') then fire(ctx, cmds.squad_list(), 'List sent to chat.');
+            elseif (id == 'list') then
+                data.request_roster(ctx.enqueue);
+                fire(ctx, cmds.squad_list(), 'List + roster refresh.');
             elseif (id == 'set') then set_slot_menu(n);
             elseif (id == 'clear') then clear_slot_menu(n);
             elseif (id == 'engage') then fire(ctx, cmds.squad_engage(), 'Engage.');
@@ -157,7 +310,7 @@ function M.jobs(ctx)
     end
 
     local function change_jobs(n)
-        n:push(text_entry('Character (me or name)', 'Who to change jobs for.', 'me', function(char, nav)
+        n:push(pick_character(ctx, 'Character', { me = true }, function(char, nav)
             local mains = {};
             for i, j in ipairs(job_labels) do
                 mains[i] = j;
@@ -177,6 +330,21 @@ function M.jobs(ctx)
         end));
     end
 
+    local function preset_pick(title, on_name)
+        data.request_jobs(ctx.enqueue);
+        data.request_job_presets(ctx.enqueue);
+        return live_pick(ctx, title, function()
+            return data.job_preset_labels();
+        end, on_name, {
+            refresh = function()
+                data.request_job_presets(ctx.enqueue);
+            end,
+            refresh_desc = 'Queue !dwj list.',
+            type_fallback = true,
+            empty = 'No presets — Refresh or Type',
+        });
+    end
+
     return {
         id = 'jobs',
         title = 'Jobs',
@@ -185,7 +353,7 @@ function M.jobs(ctx)
             { id = 'use', label = 'Use preset…', desc = 'Apply a saved lineup (!jobs use).' },
             { id = 'save', label = 'Save preset…', desc = 'Save current lineup (!jobs save).' },
             { id = 'delete', label = 'Delete preset…', desc = 'Delete a saved lineup (!jobs delete).' },
-            { id = 'list', label = 'List presets', desc = 'Print presets to chat (!jobs list).' },
+            { id = 'list', label = 'List presets', desc = 'Refresh preset list from server.' },
         }),
         on_confirm = function(self, index, n)
             local row = self:rows()[index];
@@ -196,7 +364,7 @@ function M.jobs(ctx)
             if (id == 'change') then
                 change_jobs(n);
             elseif (id == 'use') then
-                n:push(text_entry('Preset name', 'Preset to use.', '', function(name, nav)
+                n:push(preset_pick('Use preset', function(name, nav)
                     fire(ctx, cmds.jobs_use(name), 'Use preset ' .. name);
                     nav:pop();
                 end));
@@ -206,21 +374,45 @@ function M.jobs(ctx)
                     nav:pop();
                 end));
             elseif (id == 'delete') then
-                n:push(text_entry('Preset name', 'Preset to delete.', '', function(name, nav)
+                n:push(preset_pick('Delete preset', function(name, nav)
                     fire(ctx, cmds.jobs_delete(name), 'Delete preset ' .. name);
                     nav:pop();
                 end));
             elseif (id == 'list') then
-                fire(ctx, cmds.jobs_list(), 'Preset list sent to chat.');
+                data.request_job_presets(ctx.enqueue);
+                fire(ctx, cmds.jobs_list(), 'Presets refreshing…');
             end
         end,
     };
 end
 
 function M.rules(ctx)
+    local function set_pick(on_name)
+        data.request_rule_sets(ctx.enqueue);
+        data.request_rule_presets(ctx.enqueue);
+        return live_pick(ctx, 'Rule set', function()
+            local labels = {};
+            for _, n in ipairs(data.rule_preset_labels()) do
+                labels[#labels + 1] = n;
+            end
+            for _, n in ipairs(data.rule_set_labels()) do
+                labels[#labels + 1] = n;
+            end
+            return labels;
+        end, on_name, {
+            refresh = function()
+                data.request_rule_sets(ctx.enqueue);
+                data.request_rule_presets(ctx.enqueue);
+            end,
+            refresh_desc = 'Queue !dwg list + !dwg presets.',
+            type_fallback = true,
+            empty = 'No sets — Refresh or Type',
+        });
+    end
+
     local function assign_flow(n, with_job)
-        n:push(text_entry('Member (or all)', 'Who receives the set.', 'all', function(member, nav)
-            nav:push(text_entry('Set name', 'Shipped or account set name.', '', function(setname, nav2)
+        n:push(pick_character(ctx, 'Member', { me = true, all = true }, function(member, nav)
+            nav:push(set_pick(function(setname, nav2)
                 if (with_job) then
                     nav2:push(pick_list('When job', cmds.JOBS, function(job, nav3)
                         fire(ctx, cmds.rules_use_when(member, setname, job), string.format('Rules %s → %s when %s', member, setname, job));
@@ -239,9 +431,9 @@ function M.rules(ctx)
         title = 'Rules',
         rows = action_rows({
             { id = 'status', label = "What's running", desc = 'Print live rule sets (!squad rules).' },
-            { id = 'assign', label = 'Assign set…', desc = 'Member or all → set name → use.' },
+            { id = 'assign', label = 'Assign set…', desc = 'Member or all → set from list → use.' },
             { id = 'when', label = 'Assign when job…', desc = 'Bind a set to a job on a member.' },
-            { id = 'presets', label = 'List shipped presets', desc = '!squad rules presets' },
+            { id = 'presets', label = 'Refresh shipped presets', desc = '!dwg presets into the pick lists.' },
             { id = 'behavior', label = 'Behavior…', desc = 'Same profiles as Squad behavior.' },
         }),
         on_confirm = function(self, index, n)
@@ -251,7 +443,9 @@ function M.rules(ctx)
             if (id == 'status') then fire(ctx, cmds.rules_status(), 'Rules status → chat.');
             elseif (id == 'assign') then assign_flow(n, false);
             elseif (id == 'when') then assign_flow(n, true);
-            elseif (id == 'presets') then fire(ctx, cmds.rules_presets(), 'Presets → chat.');
+            elseif (id == 'presets') then
+                data.request_rule_presets(ctx.enqueue);
+                fire(ctx, cmds.rules_presets(), 'Presets refreshing…');
             elseif (id == 'behavior') then
                 n:push(pick_list('Behavior', cmds.BEHAVIORS, function(profile, nav)
                     fire(ctx, cmds.squad_behavior(profile), 'Behavior → ' .. profile);
@@ -264,30 +458,65 @@ end
 
 function M.port(ctx)
     local function list_go(tab, title, n)
+        data.request_port_list(ctx.enqueue, tab);
+        local buf = { '' };
         n:push({
             id = 'port-tab:' .. tab,
             title = title,
-            search = { '' },
+            search = buf,
             rows = function()
-                return {
-                    { label = 'List page 1', desc = 'Queue !port list ' .. tab },
-                    { label = 'List page 2', desc = 'Queue !port list ' .. tab .. ' 2' },
-                    { label = 'Go (use text above)', desc = 'Queue !port go ' .. tab .. ' <text>' },
+                local q = buf[1] or '';
+                local rows = {
+                    { id = '__refresh', label = 'Refresh list', desc = 'Queue !port list ' .. tab },
+                    { id = '__page2', label = 'List page 2', desc = 'Queue !port list ' .. tab .. ' 2' },
                 };
+                local matched = 0;
+                for _, d in ipairs(data.port_entries()) do
+                    if (filter_match(d.label, q) or filter_match(d.name or '', q)) then
+                        rows[#rows + 1] = {
+                            id = 'dest',
+                            label = d.label,
+                            desc = d.usable and 'Go (unlocked)' or 'Listed (may be locked)',
+                            dim = not d.usable,
+                            dest = d,
+                        };
+                        matched = matched + 1;
+                    end
+                end
+                if (matched == 0) then
+                    rows[#rows + 1] = { id = '__empty', label = '(No destinations yet)', dim = true, desc = 'Refresh after the list arrives in chat.' };
+                end
+                rows[#rows + 1] = { id = '__type', label = 'Type destination…', desc = 'Fallback go by name/number.' };
+                return rows;
             end,
             on_confirm = function(self, index, nav)
-                if (index == 1) then
-                    fire(ctx, cmds.port_list(tab), 'List ' .. tab);
-                elseif (index == 2) then
-                    fire(ctx, cmds.port_list(tab, 2), 'List ' .. tab .. ' p2');
-                else
-                    local dest = (self.search[1] or ''):gsub('^%s+', ''):gsub('%s+$', '');
-                    if (dest == '') then
-                        ctx.set_status('Enter a destination in the top field.');
-                        return;
-                    end
-                    fire(ctx, cmds.port_go(tab, dest), 'Go ' .. dest);
+                local row = self:rows()[index];
+                if (row == nil) then return; end
+                if (row.id == '__refresh') then
+                    data.request_port_list(ctx.enqueue, tab);
+                    ctx.set_status('Listing ' .. tab .. '…');
+                    return;
                 end
+                if (row.id == '__page2') then
+                    data.request_port_list(ctx.enqueue, tab, 2);
+                    ctx.set_status('Listing ' .. tab .. ' page 2…');
+                    return;
+                end
+                if (row.id == '__empty') then return; end
+                if (row.id == '__type') then
+                    nav:push(text_entry('Destination', 'Name or list number.', '', function(dest, nav2)
+                        fire(ctx, cmds.port_go(tab, dest), 'Go ' .. dest);
+                        data.end_port_list();
+                        nav2:pop();
+                        nav2:pop();
+                    end));
+                    return;
+                end
+                local dest = row.dest;
+                local key = dest.id or dest.name;
+                fire(ctx, cmds.port_go(tab, key), 'Go ' .. (dest.name or key));
+                data.end_port_list();
+                nav:pop();
             end,
         });
     end
@@ -301,7 +530,7 @@ function M.port(ctx)
             { id = 'sg', label = 'Survival guides…', desc = 'List / go survival guides.' },
             { id = 'op', label = 'Outposts…', desc = 'List / go outposts.' },
             { id = 'sp', label = 'Teleport spells…', desc = 'List / go teleport spells.' },
-            { id = 'search', label = 'Search…', desc = 'Top field → !port <name> when unambiguous.' },
+            { id = 'search', label = 'Search…', desc = 'Type unambiguous zone/crystal name.' },
         }),
         on_confirm = function(self, index, n)
             local row = self:rows()[index];
@@ -322,14 +551,78 @@ function M.port(ctx)
     };
 end
 
+local function return_to_category(n)
+    while (n:depth() > 2) do
+        if (not n:pop()) then
+            break;
+        end
+    end
+end
+
 function M.items(ctx)
+    local function after_item_for_transfer(mode, char, entry, n)
+        if (entry.typed or entry.itemid == nil) then
+            local cmd = (mode == 'send') and cmds.squad_send(char, entry.name, 1) or cmds.squad_fetch(char, entry.name, 1);
+            fire(ctx, cmd, string.format('%s %s ↔ %s', mode, entry.name, char));
+        else
+            local cmd = (mode == 'send') and cmds.dwq_send(char, entry.itemid, entry.qty or 1)
+                or cmds.dwq_fetch(char, entry.itemid, 1);
+            fire(ctx, cmd, string.format('%s %s ↔ %s', mode, entry.name, char));
+        end
+        return_to_category(n);
+    end
+
+    local function transfer_flow(n, mode)
+        local title = (mode == 'send') and 'Send to' or 'Fetch from';
+        n:push(pick_character(ctx, title, { me = false }, function(char, nav)
+            nav:push(find_results_screen(ctx, 'Item', function(entry, nav2)
+                after_item_for_transfer(mode, char, entry, nav2);
+            end));
+        end));
+    end
+
     local function equip_flow(n)
-        n:push(text_entry('Character', 'Who to equip.', '', function(char, nav)
+        n:push(pick_character(ctx, 'Character', { me = true }, function(char, nav)
             nav:push(pick_list('Slot', cmds.EQUIP_SLOTS, function(slot, nav2)
-                nav2:push(text_entry('Item (or auto / none)', 'Item name, auto, or none.', 'auto', function(item, nav3)
-                    fire(ctx, cmds.squad_equip(char, slot, item), string.format('Equip %s %s → %s', char, slot, item));
-                    nav3:pop(); nav3:pop(); nav3:pop();
-                end));
+                nav2:push({
+                    id = 'equip-item',
+                    title = 'Item for ' .. slot,
+                    search = { '' },
+                    rows = function()
+                        return {
+                            { id = 'auto', label = 'auto', desc = 'Best available for this slot.' },
+                            { id = 'none', label = 'none', desc = 'Empty / unpin this slot.' },
+                            { id = '__search', label = 'Search bags…', desc = 'Find an item then equip by id.' },
+                            { id = '__type', label = 'Type name…', desc = 'Typed !squad equip fallback.' },
+                        };
+                    end,
+                    on_confirm = function(self, index, nav3)
+                        local row = self:rows()[index];
+                        if (row == nil) then return; end
+                        if (row.id == 'auto' or row.id == 'none') then
+                            fire(ctx, cmds.dwq_equip(char, slot, row.id), string.format('Equip %s %s → %s', char, slot, row.id));
+                            return_to_category(nav3);
+                            return;
+                        end
+                        if (row.id == '__type') then
+                            nav3:push(text_entry('Item', 'Item name, auto, or none.', 'auto', function(item, nav4)
+                                fire(ctx, cmds.squad_equip(char, slot, item), string.format('Equip %s %s → %s', char, slot, item));
+                                return_to_category(nav4);
+                            end));
+                            return;
+                        end
+                        if (row.id == '__search') then
+                            nav3:push(find_results_screen(ctx, 'Equip item', function(entry, nav4)
+                                if (entry.itemid ~= nil) then
+                                    fire(ctx, cmds.dwq_equip(char, slot, entry.itemid), string.format('Equip %s %s → %s', char, slot, entry.name));
+                                else
+                                    fire(ctx, cmds.squad_equip(char, slot, entry.name), string.format('Equip %s %s → %s', char, slot, entry.name));
+                                end
+                                return_to_category(nav4);
+                            end));
+                        end
+                    end,
+                });
             end));
         end));
     end
@@ -339,12 +632,12 @@ function M.items(ctx)
         title = 'Items',
         rows = action_rows({
             { id = 'who', label = 'Who', desc = 'Account bag fullness (!squad who).' },
-            { id = 'find', label = 'Find…', desc = 'Search at top across all bags.' },
-            { id = 'send', label = 'Send…', desc = 'Push item to another character.' },
-            { id = 'fetch', label = 'Fetch…', desc = 'Pull item from another character.' },
+            { id = 'find', label = 'Find…', desc = 'Search at top → pick from results.' },
+            { id = 'send', label = 'Send…', desc = 'Target character → find → send.' },
+            { id = 'fetch', label = 'Fetch…', desc = 'Source character → find → fetch.' },
             { id = 'box', label = 'In transit…', desc = '!squad box' },
             { id = 'gear', label = 'Gear…', desc = 'Show gear plan for a character.' },
-            { id = 'equip', label = 'Equip…', desc = 'Pin slot item / auto / empty.' },
+            { id = 'equip', label = 'Equip…', desc = 'Character → slot → auto / find / none.' },
             { id = 'unpin', label = 'Unpin all…', desc = 'Clear pins on a character.' },
             { id = 'opt', label = 'Optimize me', desc = '!optimizegear on the logged-in character.' },
         }),
@@ -352,35 +645,33 @@ function M.items(ctx)
             local row = self:rows()[index];
             if (row == nil) then return; end
             local id = row.id;
-            if (id == 'who') then fire(ctx, cmds.squad_who(), 'Who → chat.');
+            if (id == 'who') then
+                data.request_roster(ctx.enqueue);
+                fire(ctx, cmds.squad_who(), 'Who → chat.');
             elseif (id == 'find') then
-                n:push(text_entry('Find item', 'Search text for !squad find.', '', function(text, nav)
-                    fire(ctx, cmds.squad_find(text), 'Find ' .. text);
-                    nav:pop();
-                end));
-            elseif (id == 'send') then
-                n:push(text_entry('Target character', 'Who receives the item.', '', function(char, nav)
-                    nav:push(text_entry('Item name', 'Item to send.', '', function(item, nav2)
-                        fire(ctx, cmds.squad_send(char, item, 1), string.format('Send %s → %s', item, char));
-                        nav2:pop(); nav2:pop();
+                n:push(find_results_screen(ctx, 'Find', function(entry, nav)
+                    nav:push(pick_list('Action', { 'Send to…', 'Fetch from…', 'Done' }, function(action, nav2)
+                        if (action == 'Done') then
+                            return_to_category(nav2);
+                            return;
+                        end
+                        local mode = (action == 'Send to…') and 'send' or 'fetch';
+                        nav2:push(pick_character(ctx, mode == 'send' and 'Send to' or 'Fetch from', { me = false }, function(char, nav3)
+                            after_item_for_transfer(mode, char, entry, nav3);
+                        end));
                     end));
                 end));
-            elseif (id == 'fetch') then
-                n:push(text_entry('Source character', 'Who has the item.', '', function(char, nav)
-                    nav:push(text_entry('Item name', 'Item to fetch.', '', function(item, nav2)
-                        fire(ctx, cmds.squad_fetch(char, item, 1), string.format('Fetch %s ← %s', item, char));
-                        nav2:pop(); nav2:pop();
-                    end));
-                end));
+            elseif (id == 'send') then transfer_flow(n, 'send');
+            elseif (id == 'fetch') then transfer_flow(n, 'fetch');
             elseif (id == 'box') then fire(ctx, cmds.squad_box(), 'Box → chat.');
             elseif (id == 'gear') then
-                n:push(text_entry('Character', 'Gear report for whom.', '', function(char, nav)
+                n:push(pick_character(ctx, 'Character', { me = true }, function(char, nav)
                     fire(ctx, cmds.squad_gear(char), 'Gear ' .. char);
                     nav:pop();
                 end));
             elseif (id == 'equip') then equip_flow(n);
             elseif (id == 'unpin') then
-                n:push(text_entry('Character', 'Unpin all on whom.', '', function(char, nav)
+                n:push(pick_character(ctx, 'Character', { me = true }, function(char, nav)
                     fire(ctx, cmds.squad_unpin(char), 'Unpin ' .. char);
                     nav:pop();
                 end));
@@ -420,10 +711,11 @@ function M.home(nav, open_category)
     };
 end
 
--- Exported helpers for other category modules / later PRs
 M._fire = fire;
 M._pick_list = pick_list;
 M._text_entry = text_entry;
 M._action_rows = action_rows;
+M._live_pick = live_pick;
+M._pick_character = pick_character;
 
 return M;

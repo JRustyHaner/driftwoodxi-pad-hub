@@ -9,7 +9,7 @@
 
 addon.name    = 'dwhub';
 addon.author  = 'DriftwoodXI Pad Hub';
-addon.version = '0.3.0';
+addon.version = '1.1.0';
 addon.desc    = 'Pad-first DriftwoodXI hub (squad, jobs, items, rules, port).';
 addon.link    = 'https://github.com/JRustyHaner/driftwoodxi-pad-hub';
 
@@ -22,6 +22,7 @@ local navmod = require('nav');
 local screens = require('screens');
 local queue_mod = require('queue');
 local input = require('input');
+local data = require('data');
 
 local state = {
     open = { false },
@@ -143,7 +144,11 @@ local function draw_list()
         return;
     end
     local rows = cur:rows();
-    for i = 1, #rows do
+    local count = #rows;
+    if (nav.focus > count) then
+        nav.focus = math.max(1, count);
+    end
+    for i = 1, count do
         local row = rows[i];
         local focused = (i == nav.focus);
         local label = row.label or '?';
@@ -245,11 +250,13 @@ ashita.events.register('d3d_present', 'dwhub_present', function ()
 end);
 
 ashita.events.register('load', 'dwhub_load', function ()
-    print(chat.header('dwhub'):append(chat.message('/dwhub (or /hub) toggles the pad hub. D-pad / arrows move, A/Enter confirm, B/Esc back.')));
+    data.attach();
+    print(chat.header('dwhub'):append(chat.message('/dwhub (or /hub) toggles the pad hub. D-pad / arrows move, A/Enter confirm, B/Esc back. Reload: /addon reload dwhub')));
 end);
 
 ashita.events.register('unload', 'dwhub_unload', function ()
     input.capture(false);
+    data.detach();
 end);
 
 return {

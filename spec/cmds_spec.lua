@@ -20,4 +20,10 @@ describe('cmds', function()
     it('builds equip', function()
         assert.equals('!squad equip Yakapo main auto', cmds.squad_equip('Yakapo', 'main', 'auto'));
     end);
+
+    it('builds dwq find/send by id', function()
+        assert.equals('!dwq find crystal', cmds.dwq_find('crystal'));
+        assert.equals('!dwq send Bob 4096 2', cmds.dwq_send('Bob', 4096, 2));
+        assert.equals('!dwq equip me main auto', cmds.dwq_equip('me', 'main', 'auto'));
+    end);
 end);
