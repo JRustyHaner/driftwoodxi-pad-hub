@@ -18,14 +18,21 @@ require('common');
 local chat  = require('chat');
 local imgui = require('imgui');
 local theme = require('theme');
+local scale_mod = require('scale');
+local layout = require('layout');
 local navmod = require('nav');
 local screens = require('screens');
 local queue_mod = require('queue');
 local input = require('input');
+local pad = require('pad');
+local data = require('data');
 
 local state = {
     open = { false },
     focus_once = false,
+    search_focus = false,
+    last_screen_id = nil,
+    last_list_sig = nil,
 };
 
 local nav = navmod.new();
@@ -43,6 +50,9 @@ local function make_ctx()
     return {
         enqueue = function(command)
             cmd_queue:enqueue(command);
+        end,
+        enqueue_now = function(command)
+            live_send(command);
         end,
         set_status = function(msg)
             nav.status = msg or '';
@@ -87,6 +97,7 @@ local function set_open(value)
         ensure_root();
         input.capture(true);
         state.focus_once = true;
+        data.request_roster(make_ctx());
     else
         input.capture(false);
         cmd_queue:clear();
@@ -107,32 +118,189 @@ local function key_pressed(key)
     return false;
 end
 
+local function clear_search_focus()
+    state.search_focus = false;
+    if (imgui.SetKeyboardFocusHere ~= nil) then
+        imgui.SetKeyboardFocusHere(-1);
+    end
+end
+
+local function sync_screen_focus()
+    local cur = nav:current();
+    local sid = (cur ~= nil and cur.id) or nil;
+    if (sid ~= state.last_screen_id) then
+        state.last_screen_id = sid;
+        clear_search_focus();
+    end
+end
+
+local function sync_list_state()
+    sync_screen_focus();
+    local cur = nav:current();
+    if (cur == nil) then
+        return;
+    end
+    local sig = (cur.id or '') .. '|' .. tostring(nav:row_count());
+    if (cur.search ~= nil) then
+        sig = sig .. '|' .. tostring(cur.search[1] or '');
+    end
+    if (sig ~= state.last_list_sig) then
+        state.last_list_sig = sig;
+        nav:set_list_page(1);
+        nav:ensure_focus_visible();
+    end
+end
+
 local function handle_input()
-    -- While typing in the top field, do not steal arrows/Enter for list nav.
+    sync_list_state();
+    local cur = nav:current();
+    local has_search = (cur ~= nil and cur.search ~= nil);
+
+    -- Filter field active: B returns to list; do not move rows.
     if (imgui.IsAnyItemActive ~= nil and imgui.IsAnyItemActive()) then
-        if (key_pressed(ImGuiKey_Escape) or key_pressed(ImGuiKey_GamepadFaceRight)) then
-            local result = nav:back();
-            if (result == 'close') then
-                set_open(false);
-            end
+        if (key_pressed(ImGuiKey_Escape) or key_pressed(ImGuiKey_GamepadFaceRight) or pad.pressed(pad.BTN.B)) then
+            clear_search_focus();
+            return;
         end
         return;
     end
-    if (key_pressed(ImGuiKey_UpArrow) or key_pressed(ImGuiKey_GamepadDpadUp)) then
+
+    -- Filter highlighted but not typing yet.
+    if (state.search_focus) then
+        if (key_pressed(ImGuiKey_DownArrow) or key_pressed(ImGuiKey_GamepadDpadDown) or pad.pressed(pad.BTN.DOWN)) then
+            clear_search_focus();
+            nav.focus = 1;
+            nav:ensure_focus_visible();
+            return;
+        end
+        if (key_pressed(ImGuiKey_Enter) or key_pressed(ImGuiKey_GamepadFaceDown) or pad.pressed(pad.BTN.A)) then
+            state.search_focus = true;
+            return;
+        end
+        if (key_pressed(ImGuiKey_Escape) or key_pressed(ImGuiKey_GamepadFaceRight) or pad.pressed(pad.BTN.B)) then
+            clear_search_focus();
+            return;
+        end
+        return;
+    end
+
+    if (key_pressed(ImGuiKey_LeftArrow) or key_pressed(ImGuiKey_GamepadDpadLeft) or pad.pressed(pad.BTN.LEFT)) then
+        nav:move_page(-1);
+    end
+    if (key_pressed(ImGuiKey_RightArrow) or key_pressed(ImGuiKey_GamepadDpadRight) or pad.pressed(pad.BTN.RIGHT)) then
+        nav:move_page(1);
+    end
+    if (key_pressed(ImGuiKey_UpArrow) or key_pressed(ImGuiKey_GamepadDpadUp) or pad.pressed(pad.BTN.UP)) then
+        if (has_search and nav.focus == 1 and nav:list_page() == 1) then
+            state.search_focus = true;
+            return;
+        end
         nav:move(-1);
     end
-    if (key_pressed(ImGuiKey_DownArrow) or key_pressed(ImGuiKey_GamepadDpadDown)) then
+    if (key_pressed(ImGuiKey_DownArrow) or key_pressed(ImGuiKey_GamepadDpadDown) or pad.pressed(pad.BTN.DOWN)) then
         nav:move(1);
     end
-    if (key_pressed(ImGuiKey_Enter) or key_pressed(ImGuiKey_GamepadFaceDown)) then
+    if (key_pressed(ImGuiKey_Enter) or key_pressed(ImGuiKey_GamepadFaceDown) or pad.pressed(pad.BTN.A)) then
         nav:confirm();
     end
-    if (key_pressed(ImGuiKey_Escape) or key_pressed(ImGuiKey_GamepadFaceRight)) then
+    if (key_pressed(ImGuiKey_Escape) or key_pressed(ImGuiKey_GamepadFaceRight) or pad.pressed(pad.BTN.B)) then
         local result = nav:back();
         if (result == 'close') then
             set_open(false);
         end
     end
+end
+
+local DESC_LINES = 2;
+
+local function vec_x(v, fallback)
+    if (v == nil) then
+        return fallback or 0;
+    end
+    if (type(v) == 'number') then
+        return v;
+    end
+    return v.x or v[1] or fallback or 0;
+end
+
+local function vec_y(v, fallback)
+    if (v == nil) then
+        return fallback or 0;
+    end
+    if (type(v) == 'number') then
+        return v;
+    end
+    return v.y or v[2] or fallback or 0;
+end
+
+local function text_line_height()
+    if (imgui.GetTextLineHeightWithSpacing ~= nil) then
+        return imgui.GetTextLineHeightWithSpacing();
+    end
+    return scale_mod.list_line_height(theme.scale());
+end
+
+local function content_avail_y()
+    if (imgui.GetContentRegionAvail ~= nil) then
+        local y = vec_y(imgui.GetContentRegionAvail(), 0);
+        if (y > 0) then
+            return y;
+        end
+    end
+    local ws = theme.window_size();
+    return math.floor((ws[2] or scale_mod.WINDOW_H) * 0.42);
+end
+
+local function begin_panel(id, height, border)
+    border = (border == nil) and true or border;
+    if (imgui.BeginChild == nil) then
+        return false;
+    end
+    local flags = ImGuiWindowFlags_NoScrollbar;
+    if (ImGuiWindowFlags_NoScrollWithMouse ~= nil) then
+        flags = bit.bor(flags, ImGuiWindowFlags_NoScrollWithMouse);
+    end
+    local ok = pcall(function()
+        imgui.BeginChild(id, { -1, height }, border, flags);
+    end);
+    if (not ok) then
+        ok = pcall(function()
+            imgui.BeginChild(id, -1, height, border, flags);
+        end);
+    end
+    return ok;
+end
+
+local function end_panel()
+    if (imgui.EndChild ~= nil) then
+        imgui.EndChild();
+    end
+end
+
+local function draw_filter(cur)
+    if (cur == nil or cur.search == nil) then
+        return;
+    end
+    local lh = text_line_height();
+    local filter_h = lh * 3 + math.floor(4 * theme.scale() + 0.5);
+    begin_panel('##dwhub_filter', filter_h, false);
+    local filter_active = (imgui.IsAnyItemActive ~= nil and imgui.IsAnyItemActive());
+    local filter_focused = state.search_focus or filter_active;
+    local default_label = (cur.search_required and (cur.search_label or 'Text'))
+        or 'Filter (optional — Up from top row)';
+    local filter_label = filter_focused and ('> ' .. default_label) or default_label;
+    imgui.TextColored(filter_focused and theme.colors.selection or theme.colors.textDim, filter_label);
+    if (state.search_focus and not filter_active and imgui.SetKeyboardFocusHere ~= nil) then
+        imgui.SetKeyboardFocusHere();
+    end
+    imgui.PushItemWidth(-1);
+    imgui.InputText('##dwhub_search', cur.search, 64);
+    imgui.PopItemWidth();
+    if (filter_focused) then
+        imgui.TextColored(theme.colors.textDim, 'Down: list   B: back to list');
+    end
+    end_panel();
+    imgui.Separator();
 end
 
 local function draw_description()
@@ -141,68 +309,127 @@ local function draw_description()
     if (cur ~= nil and cur.title ~= nil) then
         title = cur.title;
     end
+    local lh = text_line_height();
+    local desc_h = lh * DESC_LINES + math.floor(4 * theme.scale() + 0.5);
+    begin_panel('##dwhub_desc', desc_h, false);
     imgui.TextColored(theme.colors.title, title);
-    imgui.Spacing();
     imgui.TextWrapped(nav:description());
     if (nav.status ~= nil and nav.status ~= '') then
-        imgui.Spacing();
         imgui.TextColored(theme.colors.textDim, nav.status);
     end
+    end_panel();
 end
 
-local function draw_list()
-    local cur = nav:current();
-    if (cur == nil) then
+local function draw_list_rows(start_i, stop_i, rows)
+    if (stop_i < start_i) then
+        imgui.TextColored(theme.colors.textDim, '  (empty)');
         return;
     end
-    local rows = cur:rows();
-    for i = 1, #rows do
+    for i = start_i, stop_i do
         local row = rows[i];
-        local focused = (i == nav.focus);
-        local label = row.label or '?';
-        if (focused) then
-            label = '> ' .. label;
-            local col = row.dim and theme.colors.textDim or theme.colors.selection;
-            imgui.TextColored(col, label);
-        else
-            local col = row.dim and theme.colors.textDim or theme.colors.text;
-            imgui.TextColored(col, '  ' .. (row.label or '?'));
+        if (row ~= nil) then
+            local focused = (i == nav.focus);
+            local label = row.label or '?';
+            if (focused) then
+                label = '> ' .. label;
+                local col = row.dim and theme.colors.textDim or theme.colors.selection;
+                imgui.TextColored(col, label);
+            else
+                local col = row.dim and theme.colors.textDim or theme.colors.text;
+                imgui.TextColored(col, '  ' .. label);
+            end
         end
     end
 end
 
+local function draw_list(list_h)
+    local cur = nav:current();
+    if (cur == nil) then
+        return false;
+    end
+    local rows = cur:rows();
+    local start_i, stop_i = nav:page_row_range();
+    if (begin_panel('##dwhub_list', list_h, true)) then
+        draw_list_rows(start_i, stop_i, rows);
+        end_panel();
+    else
+        local pos = imgui.GetCursorScreenPos and imgui.GetCursorScreenPos() or { x = 0, y = 0 };
+        local w = theme.window_size()[1] or scale_mod.WINDOW_W;
+        if (imgui.GetContentRegionAvail ~= nil) then
+            w = vec_x(imgui.GetContentRegionAvail(), w);
+        end
+        if (imgui.PushClipRect ~= nil) then
+            imgui.PushClipRect(
+                { pos.x, pos.y },
+                { pos.x + w, pos.y + list_h },
+                true
+            );
+        end
+        draw_list_rows(start_i, stop_i, rows);
+        if (imgui.PopClipRect ~= nil) then
+            imgui.PopClipRect();
+        end
+        if (imgui.Dummy ~= nil) then
+            imgui.Dummy({ -1, list_h });
+        end
+    end
+    return nav:page_count() > 1;
+end
+
 local function draw_window()
-    imgui.SetNextWindowSize({ 520, 360 }, ImGuiCond_FirstUseEver);
-    imgui.SetNextWindowPos({ 40, 60 }, ImGuiCond_FirstUseEver);
     if (state.focus_once) then
+        imgui.SetNextWindowSize(theme.window_size(), ImGuiCond_Always);
+        imgui.SetNextWindowPos(theme.window_pos(), ImGuiCond_Always);
         imgui.SetNextWindowFocus();
         state.focus_once = false;
     end
 
-    local visible = imgui.Begin('DriftwoodXI Pad Hub##dwhub', state.open, bit.bor(ImGuiWindowFlags_NoCollapse, ImGuiWindowFlags_NoScrollbar));
+    local window_flags = bit.bor(ImGuiWindowFlags_NoCollapse, ImGuiWindowFlags_NoScrollbar);
+    if (ImGuiWindowFlags_NoScrollWithMouse ~= nil) then
+        window_flags = bit.bor(window_flags, ImGuiWindowFlags_NoScrollWithMouse);
+    end
+    local visible = imgui.Begin('DriftwoodXI Pad Hub##dwhub', state.open, window_flags);
     if (visible) then
-        handle_input();
-
+        local font_pushed = theme.push_font();
         local cur = nav:current();
-        -- Search / text at TOP for Steam Deck OSK clearance
-        if (cur ~= nil and cur.search ~= nil) then
-            imgui.TextColored(theme.colors.textDim, 'Text');
-            imgui.PushItemWidth(-1);
-            imgui.InputText('##dwhub_search', cur.search, 64);
-            imgui.PopItemWidth();
-            imgui.Separator();
-        end
 
+        draw_filter(cur);
         draw_description();
         imgui.Separator();
-        draw_list();
+
+        local lh = text_line_height();
+        local avail = content_avail_y();
+        local list_h, page_size = layout.split_list_budget(avail, lh, {
+            footer_lines = 1,
+            page_indicator = true,
+            extra_chrome = math.floor(8 * theme.scale() + 0.5),
+        });
+        nav:set_page_size(page_size);
+        nav:ensure_focus_visible();
+
+        handle_input();
+
+        local rows = (cur ~= nil and cur.rows ~= nil) and cur:rows() or {};
+        local show_page = draw_list(list_h);
+
+        if (show_page) then
+            imgui.TextColored(theme.colors.textDim, string.format(
+                'Page %d / %d  (%d items)   ← →',
+                nav:list_page(),
+                nav:page_count(),
+                #rows
+            ));
+        end
         imgui.Separator();
-        local footer = (nav:depth() <= 1) and 'A Confirm   B Close' or 'A Confirm   B Back';
+        local footer_hint = (cur ~= nil and cur.search_required) and '← → pages   Up: text   A Confirm   B Back'
+            or '← → pages   Up: filter   A Confirm   B Back';
+        local footer = (nav:depth() <= 1) and (footer_hint:gsub('Back', 'Close')) or footer_hint;
         imgui.TextColored(theme.colors.textDim, footer);
         if (cmd_queue:len() > 0) then
             imgui.SameLine();
             imgui.TextColored(theme.colors.textDim, string.format('  queue:%d', cmd_queue:len()));
         end
+        theme.pop_font(font_pushed);
     end
     imgui.End();
 
@@ -246,6 +473,9 @@ end);
 
 ashita.events.register('d3d_present', 'dwhub_present', function ()
     cmd_queue:tick();
+    if (state.open[1]) then
+        data.tick(make_ctx());
+    end
 
     if (not state.open[1]) then
         return;
@@ -253,6 +483,7 @@ ashita.events.register('d3d_present', 'dwhub_present', function ()
 
     ensure_root();
 
+    theme.update();
     local token = theme.push();
     local ok, err = pcall(draw_window);
     theme.pop(token);
@@ -262,11 +493,14 @@ ashita.events.register('d3d_present', 'dwhub_present', function ()
 end);
 
 ashita.events.register('load', 'dwhub_load', function ()
+    input.capture(false);
+    data.attach();
     print(chat.header('dwhub'):append(chat.message('/dwhub (or /hub) toggles the pad hub. D-pad / arrows move, A/Enter confirm, B/Esc back.')));
 end);
 
 ashita.events.register('unload', 'dwhub_unload', function ()
     input.capture(false);
+    data.detach();
 end);
 
 return {

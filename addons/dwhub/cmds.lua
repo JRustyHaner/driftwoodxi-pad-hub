@@ -153,4 +153,68 @@ function M.optimizegear()
     return '!optimizegear';
 end
 
+function M.optimizegear_preview()
+    return '!optimizegear preview';
+end
+
+--- Lowercase job-tag abbreviations indexed by FFXI job id (matches cmds.JOBS order).
+M.JOB_TAGS = {
+    'war', 'mnk', 'whm', 'blm', 'rdm', 'thf', 'pld', 'drk',
+    'bst', 'brd', 'rng', 'sam', 'nin', 'drg', 'smn', 'blu',
+    'cor', 'pup', 'dnc', 'sch', 'geo', 'run',
+};
+
+function M.job_tag_for_id(job_id)
+    return M.JOB_TAGS[job_id];
+end
+
+function M.job_id_for_tag(tag)
+    if (tag == nil) then
+        return nil;
+    end
+    local base = string.match(string.lower(tag), '^(%a+)');
+    if (base == nil) then
+        return nil;
+    end
+    for i, abbrev in ipairs(M.JOB_TAGS) do
+        if (abbrev == base) then
+            return i;
+        end
+    end
+    return nil;
+end
+
+--- Cast from one squad member tag: !whm cure3 me
+function M.job_cast(tag, spell, target)
+    tag = string.lower(tag or '');
+    spell = spell or '';
+    if (tag == '' or spell == '') then
+        return nil;
+    end
+    if (target == nil or target == '') then
+        return string.format('!%s %s', tag, spell);
+    end
+    return string.format('!%s %s %s', tag, spell, target);
+end
+
+--- Cast from every member of a job (main or sub): !allwhm curaga me
+function M.job_cast_all(job_upper, spell, target)
+    if (job_upper == nil or spell == nil or spell == '') then
+        return nil;
+    end
+    local tag = 'all' .. string.lower(job_upper);
+    if (target == nil or target == '') then
+        return string.format('!%s %s', tag, spell);
+    end
+    return string.format('!%s %s %s', tag, spell, target);
+end
+
+function M.job_spell_list(tag)
+    tag = string.lower(tag or '');
+    if (tag == '') then
+        return nil;
+    end
+    return string.format('!%s spells', tag);
+end
+
 return M;

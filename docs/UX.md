@@ -11,9 +11,12 @@ Controller-first Ashita overlay for DriftwoodXI. Chrome reference: [mockups/ffxi
 | B | Back / close hub from Home |
 | Macro / bind | Toggle `/dwhub` (Select stays on Steam Deck OSK) |
 
-- Target frame: **1280×720**
+- Design frame: **1280×720** — font, padding, and window size scale up/down with your game resolution (4K ≈ 3×, 1080p ≈ 1.5×)
 - Search fields at the **top** of the active window (OSK rises from the bottom)
-- Footer hint: `A Confirm  B Back` (Home: `B Close`)
+- **List viewport:** every menu/list draws inside a fixed box; only the current page of rows is shown
+- **Paging:** **← / →** (or D-pad left/right) turns pages; **↑ / ↓** moves focus (auto-advances page at edges)
+- **Optional filter:** press **Up** on the first row of page 1 to highlight the filter field; **Down** or **B** returns to the list
+- Footer hint: `← → pages   Up: filter   A Confirm   B Back` (Home: `B Close`)
 - Focused row: yellow text + white hand cursor; description panel explains the row
 - Vertical lists only (pad-friendly); mock’s horizontal FFXI bar is chrome inspiration, not primary nav
 
@@ -40,6 +43,9 @@ Controller-first Ashita overlay for DriftwoodXI. Chrome reference: [mockups/ffxi
 | Disengage | `!squad disengage` |
 | Come | `!squad come` |
 | Rest | `!squad rest` |
+| Roster | Read-only slots 1–5 in hub (Refresh) |
+| Cast… | Job tag → spell → target → `!whm cure3 me` |
+| Cast all… | Job → spell → target → `!allwhm curaga me` |
 | Behavior… | Aggressive / Defensive / Passive / Off → `!squad behavior <profile>` |
 
 ---
@@ -72,7 +78,9 @@ Controller-first Ashita overlay for DriftwoodXI. Chrome reference: [mockups/ffxi
 | Gear… | Character → `!squad gear` |
 | Equip… | Character → slot → item / Auto / Empty → `!squad equip` |
 | Unpin all… | Character → `!squad unpin` |
-| Optimize me | `!optimizegear` (preview when easy) |
+| Optimize… | Apply `!optimizegear` or preview in chat |
+
+Unusable port destinations are dimmed and cannot Go.
 
 **Equip slots:** `main sub ranged ammo head body hands legs feet neck waist ear1 ear2 ring1 ring2 back`
 

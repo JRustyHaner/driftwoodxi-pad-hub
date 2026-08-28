@@ -1,21 +1,22 @@
 --[[
 * DriftwoodXI Pad Hub — input guard
 *
-* While the hub is open we keep FFXI from also eating navigation:
-*   - SetDisableGamepad on the input manager (pad)
+* While the hub is open we keep FFXI from also eating keyboard navigation:
 *   - IKeyboard:SetBlockInput (arrows / Enter / Esc / typing)
 *
-* Ashita still delivers those keys to ImGui, so hub nav and top search fields
-* keep working. Closing restores the previous flags.
+* Gamepad is handled in pad.lua via xinput_state / xinput_button. Do NOT call
+* SetDisableGamepad here — on Steam Deck it stops XInput events and breaks hub nav.
 *
-* Best-effort: missing APIs are skipped; docs note the fallback.
+* Ashita still delivers blocked keys to ImGui when supported. Closing restores flags.
 --]]
 
 local M = {
     _active = false,
-    _prev_disable_gamepad = nil,
     _prev_block_keyboard = nil,
+    _prev_io_flags = nil,
 };
+
+local pad = require('pad');
 
 local function input_manager()
     if (AshitaCore == nil) then
@@ -54,22 +55,9 @@ function M.capture(enable)
         return;
     end
 
-    local im = input_manager();
     local kb = keyboard();
 
     if (enable) then
-        if (im ~= nil) then
-            local ok, prev = pcall(function()
-                return im:GetDisableGamepad();
-            end);
-            if (ok) then
-                M._prev_disable_gamepad = prev;
-            end
-            pcall(function()
-                im:SetDisableGamepad(true);
-            end);
-        end
-
         if (kb ~= nil) then
             local ok, prev = pcall(function()
                 return kb:GetBlockInput();
@@ -82,29 +70,18 @@ function M.capture(enable)
             end);
         end
 
-        -- Prefer ImGui keyboard/gamepad nav while the hub owns focus.
         pcall(function()
             local io = imgui.GetIO();
             if (io ~= nil and io.ConfigFlags ~= nil) then
+                M._prev_io_flags = io.ConfigFlags;
                 io.ConfigFlags = bit.bor(io.ConfigFlags, ImGuiConfigFlags_NavEnableGamepad);
                 io.ConfigFlags = bit.bor(io.ConfigFlags, ImGuiConfigFlags_NavEnableKeyboard);
             end
         end);
 
         M._active = true;
+        pad.set_active(true);
     else
-        if (im ~= nil) then
-            local prev = M._prev_disable_gamepad;
-            pcall(function()
-                if (prev ~= nil) then
-                    im:SetDisableGamepad(prev);
-                else
-                    im:SetDisableGamepad(false);
-                end
-            end);
-            M._prev_disable_gamepad = nil;
-        end
-
         if (kb ~= nil) then
             local prev = M._prev_block_keyboard;
             pcall(function()
@@ -117,7 +94,16 @@ function M.capture(enable)
             M._prev_block_keyboard = nil;
         end
 
+        pcall(function()
+            local io = imgui.GetIO();
+            if (io ~= nil and io.ConfigFlags ~= nil and M._prev_io_flags ~= nil) then
+                io.ConfigFlags = M._prev_io_flags;
+            end
+        end);
+        M._prev_io_flags = nil;
+
         M._active = false;
+        pad.set_active(false);
     end
 end
 
