@@ -14,6 +14,7 @@ local arena = require('screens.arena');
 local raid = require('screens.raid');
 local quests = require('screens.quests');
 local drift = require('screens.drift');
+local storage = require('screens.storage');
 local expansion = require('screens.expansion');
 
 local M = {};
@@ -43,7 +44,7 @@ M.quests = quests.quests;
 
 M.drift = drift.drift;
 
-M.storage = expansion.storage;
+M.storage = storage.storage;
 M.market = expansion.market;
 M.merc = expansion.merc;
 

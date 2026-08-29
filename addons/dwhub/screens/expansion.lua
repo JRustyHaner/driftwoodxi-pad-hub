@@ -51,14 +51,6 @@ local function stub_screen(id, title, row_defs)
     end;
 end
 
-function M.storage(ctx)
-    return stub_screen('storage', 'Storage', {
-        { id = 'summary', label = 'Summary', desc = 'Account warehouse overview (!warehouse).', cmd = cmds.warehouse_summary() },
-        { id = 'page', label = 'Browse shelf…', desc = 'Paged item list — #53.', dim = true },
-        { id = 'put', label = 'Put / take…', desc = 'Move items — #53–#54.', dim = true },
-    })(ctx);
-end
-
 function M.market(ctx)
     return stub_screen('market', 'Market', {
         { id = 'summary', label = 'Account line', desc = 'Listings, wallet, orders (!market).', cmd = cmds.market_summary() },

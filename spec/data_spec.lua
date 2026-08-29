@@ -98,6 +98,23 @@ describe('data machine parse', function()
         end);
     end);
 
+    describe('warehouse page fixture', function()
+        it('parses shelf paging from _DWUDATA', function()
+            data.set_item_name_fn(function(id)
+                if (id == 4096) then
+                    return 'Fire Crystal';
+                end
+                return nil;
+            end);
+            fixtures.apply_machine(data, fixtures.load('warehouse_page'));
+            local info = data.warehouse_info();
+            assert.equals(2, info.page);
+            assert.equals(12, info.used);
+            assert.equals(2, #data.warehouse_items());
+            assert.equals(51, data.warehouse_items()[1].slot);
+        end);
+    end);
+
     describe('port list fixture', function()
         it('parses starred and plain destination lines', function()
             fixtures.apply_port(data, fixtures.load('port_list'));

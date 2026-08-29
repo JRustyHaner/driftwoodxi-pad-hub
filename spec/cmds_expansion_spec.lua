@@ -5,6 +5,9 @@ local cmds = require('cmds');
 describe('cmds expansion stubs', function()
     it('builds warehouse and market summaries', function()
         assert.equals('!warehouse', cmds.warehouse_summary());
+        assert.equals('!warehouse page 2', cmds.warehouse_page(2));
+        assert.equals('!warehouse take 5 Bob', cmds.warehouse_take(5, 'Bob'));
+        assert.equals('!dwu page 1', cmds.dwu_page(1));
         assert.equals('!market', cmds.market_summary());
     end);
 
