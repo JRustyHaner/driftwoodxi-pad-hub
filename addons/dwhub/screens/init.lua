@@ -27,5 +27,6 @@ M._text_entry = H.text_entry;
 M._action_rows = H.action_rows;
 M._live_pick = H.live_pick;
 M._pick_character = H.pick_character;
+M._confirm_pick = H.confirm_pick;
 
 return M;

@@ -15,28 +15,41 @@ local function action_rows(entries)
     end;
 end
 
-function M.group(group_def, open_category)
-    local title = group_def.label or 'Group';
-    local entries = group_def.categories or {};
+--- Confirm / Cancel gate before spend, warp, enter, or buy actions.
+--- on_yes(nav) on Confirm; Cancel row and B/back pop without calling on_yes.
+local function confirm_pick(title, desc, on_yes, on_no)
+    local function cancel(nav)
+        if (on_no ~= nil) then
+            on_no(nav);
+        else
+            nav:pop();
+        end
+    end
+
     return {
-        id = 'group:' .. (group_def.id or title),
-        title = title,
-        rows = action_rows(entries),
+        id = 'confirm:' .. (title or 'action'),
+        title = title or 'Confirm',
+        rows = function()
+            return {
+                { id = 'yes', label = 'Confirm', desc = desc or 'Proceed with this action.' },
+                { id = 'no', label = 'Cancel', desc = 'Go back without doing anything.' },
+            };
+        end,
         on_confirm = function(self, index, n)
             local row = self:rows()[index];
-            if (row == nil or row.dim) then
-                if (row ~= nil and n.status ~= nil) then
-                    n.status = row.desc or 'Coming soon.';
+            if (row == nil) then
+                return;
+            end
+            if (row.id == 'yes') then
+                if (on_yes ~= nil) then
+                    on_yes(n);
                 end
-                return;
+            elseif (row.id == 'no') then
+                cancel(n);
             end
-            local cat = entries[index] and entries[index].category;
-            if (cat == nil) then
-                return;
-            end
-            if (open_category ~= nil) then
-                open_category(cat, n);
-            end
+        end,
+        on_back = function(n)
+            cancel(n);
         end,
     };
 end
@@ -298,6 +311,7 @@ local function cast_all_flow(ctx, n)
     end));
 end
 M.action_rows = action_rows;
+M.confirm_pick = confirm_pick;
 M.fire = fire;
 M.filter_match = filter_match;
 M.pick_list = pick_list;

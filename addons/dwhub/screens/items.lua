@@ -12,6 +12,7 @@ local qty_pick = H.qty_pick;
 local text_entry = H.text_entry;
 local live_pick = H.live_pick;
 local pick_character = H.pick_character;
+local confirm_pick = H.confirm_pick;
 local pop_to_category = H.pop_to_category;
 
 local M = {};
@@ -360,10 +361,18 @@ function M.items(ctx)
                 n:push(pick_list('Optimize', { 'Apply now', 'Preview only' }, function(action, nav)
                     if (action == 'Preview only') then
                         fire(ctx, cmds.optimizegear_preview(), 'Optimize preview → chat.');
-                    else
-                        fire(ctx, cmds.optimizegear(), 'Optimizegear.');
+                        nav:pop();
+                        return;
                     end
-                    nav:pop();
+                    nav:push(confirm_pick(
+                        'Optimize gear',
+                        'Dress your character in the best gear owned for this job. The server refuses while engaged.',
+                        function(nav2)
+                            fire(ctx, cmds.optimizegear(), 'Optimizegear.');
+                            nav2:pop();
+                            nav2:pop();
+                        end
+                    ));
                 end));
             end
         end,
