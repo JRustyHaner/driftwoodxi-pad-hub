@@ -24,6 +24,7 @@ Manual verification (CI cannot boot FFXI). Run on Steam Deck Game Mode or Deskto
 - [ ] Roster shows slots 1–5 (read-only) with Refresh
 - [ ] Set slot → character pick works
 - [ ] Cast… queues `!{tag} {spell} [target]`
+- [ ] Hints (me) / Hints… queue `!squad hints me` or `!squad hints <name>`
 - [ ] Behavior submenu applies a profile
 
 ## Jobs

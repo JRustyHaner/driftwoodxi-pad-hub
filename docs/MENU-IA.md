@@ -26,7 +26,7 @@ Squad control, jobs, combat rules, and teleport.
 
 | Screen | Status | Notes |
 |--------|--------|-------|
-| Squad | Shipped | Call, dismiss, slots, cast, behavior, hints (#39) |
+| Squad | Shipped | Call, dismiss, slots, cast, behavior, hints |
 | Jobs | Shipped | Change jobs, presets |
 | Rules | Shipped | Assign gambit sets (not authoring — use `/gambits`) |
 | Port | Shipped | Home, HP/SG/OP/SP lists, search |
