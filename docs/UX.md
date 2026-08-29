@@ -20,6 +20,20 @@ Controller-first Ashita overlay for DriftwoodXI. Chrome reference: [mockups/ffxi
 - Focused row: yellow text + white hand cursor; description panel explains the row
 - Vertical lists only (pad-friendly); mock’s horizontal FFXI bar is chrome inspiration, not primary nav
 
+## Confirm gates
+
+Spend, warp, enter, and buy flows use an explicit **Confirm / Cancel** screen before queuing irreversible commands (`screens._helpers.confirm_pick`).
+
+| Control | Result |
+|---------|--------|
+| **Confirm** + A | Runs the action; queues the `!` command |
+| **Cancel** + A | Pops the gate — **no command** |
+| **B** / Esc | Same as Cancel |
+
+**Example:** Items → Optimize… → Apply now → confirm → `!optimizegear`. Preview skips the gate.
+
+Future raid enter, drift buy, warehouse slot purchase, and merc hire will reuse the same helper.
+
 ## Home
 
 Fixed **five group rows** — Home never grows. Full map: [MENU-IA.md](./MENU-IA.md).
@@ -86,7 +100,7 @@ Confirm a group → pick a category → existing screen flows below.
 | Gear… | Character → `!squad gear` |
 | Equip… | Character → slot → item / Auto / Empty → `!squad equip` |
 | Unpin all… | Character → `!squad equip <char> <slot> auto` for every slot |
-| Optimize… | Apply `!optimizegear` or preview in chat |
+| Optimize… | Preview `!optimizegear preview` or Apply → **Confirm gate** → `!optimizegear` |
 
 Unusable port destinations are dimmed and cannot Go.
 
