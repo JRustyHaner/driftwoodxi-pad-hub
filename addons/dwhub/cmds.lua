@@ -149,6 +149,13 @@ function M.squad_unpin(char)
     return string.format('!squad unpin %s', char);
 end
 
+function M.squad_hints(char)
+    if (char == nil or char == '') then
+        return '!squad hints';
+    end
+    return string.format('!squad hints %s', char);
+end
+
 function M.optimizegear()
     return '!optimizegear';
 end

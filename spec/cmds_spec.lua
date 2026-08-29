@@ -26,6 +26,12 @@ describe('cmds', function()
         assert.equals('!squad fetch Alice 16512 1', cmds.squad_fetch('Alice', 16512, 1));
     end);
 
+    it('builds squad hints', function()
+        assert.equals('!squad hints', cmds.squad_hints());
+        assert.equals('!squad hints me', cmds.squad_hints('me'));
+        assert.equals('!squad hints Yakapo', cmds.squad_hints('Yakapo'));
+    end);
+
     it('builds job cast commands', function()
         assert.equals('!whm cure3 me', cmds.job_cast('whm', 'cure3', 'me'));
         assert.equals('!blm stone', cmds.job_cast('blm', 'stone', nil));

@@ -599,6 +599,18 @@ function M.squad(ctx)
         };
     end
 
+    local function hints_flow(n, char)
+        data.request_roster(ctx);
+        fire(ctx, cmds.squad_hints(char), 'Hints → chat.');
+        n:pop();
+    end
+
+    local function hints_menu(n)
+        n:push(pick_character(ctx, 'Hints for', { me = true }, function(name, nav)
+            hints_flow(nav, name);
+        end));
+    end
+
     return {
         id = 'squad',
         title = 'Squad',
@@ -615,6 +627,8 @@ function M.squad(ctx)
             { id = 'cast', label = 'Cast…', desc = 'Job tag → spell → target (!whm cure3 me).' },
             { id = 'castall', label = 'Cast all…', desc = 'Every member of a job (!allwhm curaga me).' },
             { id = 'behavior', label = 'Behavior…', desc = 'Aggressive / defensive / passive / off.' },
+            { id = 'hints_me', label = 'Hints (me)', desc = 'Gear upgrades for logged-in character (!squad hints me).' },
+            { id = 'hints', label = 'Hints…', desc = 'Pick member → what would make them stronger (!squad hints).' },
         }),
         on_confirm = function(self, index, n)
             local row = self:rows()[index];
@@ -635,6 +649,8 @@ function M.squad(ctx)
             elseif (id == 'cast') then cast_member_flow(ctx, n);
             elseif (id == 'castall') then cast_all_flow(ctx, n);
             elseif (id == 'behavior') then behavior_menu(n);
+            elseif (id == 'hints_me') then fire(ctx, cmds.squad_hints('me'), 'Hints (me) → chat.');
+            elseif (id == 'hints') then hints_menu(n);
             end
         end,
     };

@@ -53,6 +53,8 @@ Confirm a group → pick a category → existing screen flows below.
 | Cast… | Job tag → spell → target → `!whm cure3 me` |
 | Cast all… | Job → spell → target → `!allwhm curaga me` |
 | Behavior… | Aggressive / Defensive / Passive / Off → `!squad behavior <profile>` |
+| Hints (me) | `!squad hints me` |
+| Hints… | Character → `!squad hints <name>` |
 
 ---
 
