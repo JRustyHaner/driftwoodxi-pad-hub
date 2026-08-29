@@ -9,7 +9,7 @@
 
 addon.name    = 'dwhub';
 addon.author  = 'DriftwoodXI Pad Hub';
-addon.version = '0.4.1';
+addon.version = '0.4.3';
 addon.desc    = 'Pad-first DriftwoodXI hub — Party, Inventory, Quests, Instances, Field.';
 addon.link    = 'https://github.com/JRustyHaner/driftwoodxi-pad-hub';
 
@@ -40,6 +40,8 @@ local cmd_queue = queue_mod.new({
     interval = 1.2,
 });
 
+--- Inject one outgoing line (Typed — same as official dw* addons).
+--- Unknown ! verbs on Driftwood fall through to public /say; only send registered commands.
 local function live_send(command)
     AshitaCore:GetChatManager():QueueCommand(1, command);
 end
@@ -50,9 +52,6 @@ local function make_ctx()
     return {
         enqueue = function(command)
             cmd_queue:enqueue(command);
-        end,
-        enqueue_now = function(command)
-            live_send(command);
         end,
         set_status = function(msg)
             nav.status = msg or '';

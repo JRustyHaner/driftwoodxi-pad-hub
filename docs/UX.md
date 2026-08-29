@@ -82,10 +82,10 @@ Confirm a group → pick a category → existing screen flows below.
 | Browse bags… | Character → bag page → Send / Fetch |
 | Send… | Target → item → qty → `!squad send` |
 | Fetch… | Source → item → qty → `!squad fetch` |
-| In transit… | `!squad box` |
+| In transit… | Character → `!dwq box <char>` |
 | Gear… | Character → `!squad gear` |
 | Equip… | Character → slot → item / Auto / Empty → `!squad equip` |
-| Unpin all… | Character → `!squad unpin` |
+| Unpin all… | Character → `!squad equip <char> <slot> auto` for every slot |
 | Optimize… | Apply `!optimizegear` or preview in chat |
 
 Unusable port destinations are dimmed and cannot Go.

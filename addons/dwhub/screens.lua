@@ -78,6 +78,16 @@ M.HOME_GROUPS = {
     },
 };
 
+local function action_rows(entries)
+    return function()
+        local rows = {};
+        for i, e in ipairs(entries) do
+            rows[i] = { label = e.label, desc = e.desc, dim = e.dim, id = e.id };
+        end
+        return rows;
+    end;
+end
+
 function M.group(group_def, open_category)
     local title = group_def.label or 'Group';
     local entries = group_def.categories or {};
@@ -102,16 +112,6 @@ function M.group(group_def, open_category)
             end
         end,
     };
-end
-
-local function action_rows(entries)
-    return function()
-        local rows = {};
-        for i, e in ipairs(entries) do
-            rows[i] = { label = e.label, desc = e.desc, dim = e.dim, id = e.id };
-        end
-        return rows;
-    end;
 end
 
 local function fire(ctx, command, ok_msg)
@@ -1024,10 +1024,10 @@ function M.items(ctx)
             { id = 'find', label = 'Find…', desc = 'Search at top → pick from results.' },
             { id = 'send', label = 'Send…', desc = 'Destination → browse bags → send.' },
             { id = 'fetch', label = 'Fetch…', desc = 'Source bags → pick item → fetch.' },
-            { id = 'box', label = 'In transit…', desc = '!squad box' },
+            { id = 'box', label = 'In transit…', desc = 'Pick character → !dwq box (delivery shelf).' },
             { id = 'gear', label = 'Gear…', desc = 'Show gear plan for a character.' },
             { id = 'equip', label = 'Equip…', desc = 'Character → slot → auto / browse / find.' },
-            { id = 'unpin', label = 'Unpin all…', desc = 'Clear pins on a character.' },
+            { id = 'unpin', label = 'Unpin all…', desc = 'Clear gear pins (!squad equip <slot> auto, every slot).' },
             { id = 'opt', label = 'Optimize…', desc = 'Dress logged-in character in best gear.' },
         }),
         on_confirm = function(self, index, n)
@@ -1045,7 +1045,11 @@ function M.items(ctx)
                 end));
             elseif (id == 'send') then transfer_flow(n, 'send');
             elseif (id == 'fetch') then transfer_flow(n, 'fetch');
-            elseif (id == 'box') then fire(ctx, cmds.squad_box(), 'Box → chat.');
+            elseif (id == 'box') then
+                n:push(pick_character(ctx, 'In transit for', { me = true }, function(char, nav)
+                    fire(ctx, cmds.dwq_box(char), 'In transit for ' .. char .. ' → chat.');
+                    nav:pop();
+                end));
             elseif (id == 'gear') then
                 n:push(pick_character(ctx, 'Character', { me = true }, function(char, nav)
                     fire(ctx, cmds.squad_gear(char), 'Gear ' .. char);
@@ -1054,7 +1058,9 @@ function M.items(ctx)
             elseif (id == 'equip') then equip_flow(n);
             elseif (id == 'unpin') then
                 n:push(pick_character(ctx, 'Character', { me = true }, function(char, nav)
-                    fire(ctx, cmds.squad_unpin(char), 'Unpin ' .. char);
+                    for _, slot in ipairs(cmds.EQUIP_SLOTS) do
+                        fire(ctx, cmds.squad_equip(char, slot, 'auto'), string.format('Unpin %s (%s)', char, slot));
+                    end
                     nav:pop();
                 end));
             elseif (id == 'opt') then

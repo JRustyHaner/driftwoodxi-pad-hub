@@ -75,15 +75,11 @@ local function channel_inbound(channel)
     return state.inbound[channel];
 end
 
-local function dispatch_send(ctx_or_enqueue, command, immediate)
+local function dispatch_send(ctx_or_enqueue, command)
     if (ctx_or_enqueue == nil or command == nil or command == '') then
         return;
     end
     if (type(ctx_or_enqueue) == 'table') then
-        if (immediate and ctx_or_enqueue.enqueue_now ~= nil) then
-            ctx_or_enqueue.enqueue_now(command);
-            return;
-        end
         if (ctx_or_enqueue.enqueue ~= nil) then
             ctx_or_enqueue.enqueue(command);
             return;
@@ -530,7 +526,7 @@ function M.request_spell_list(ctx_or_enqueue, tag)
         return;
     end
     M.begin_spell_list(tag);
-    dispatch_send(ctx_or_enqueue, string.format('!%s spells', tag), true);
+    dispatch_send(ctx_or_enqueue, string.format('!%s spells', tag));
 end
 
 local function is_self(flags)
@@ -698,24 +694,24 @@ function M.end_port_list()
     state.port_expecting = false;
 end
 
---- Request helpers (ctx = { enqueue, enqueue_now } or a bare enqueue function).
+--- Request helpers (ctx = { enqueue } or a bare enqueue function).
 function M.request_roster(ctx_or_enqueue)
-    dispatch_send(ctx_or_enqueue, '!dws who', true);
+    dispatch_send(ctx_or_enqueue, '!dws who');
     state.roster_pending = true;
     state.roster_last_request = os.clock();
 end
 
 function M.request_jobs(ctx_or_enqueue)
-    dispatch_send(ctx_or_enqueue, '!dwj who', true);
+    dispatch_send(ctx_or_enqueue, '!dwj who');
 end
 
 function M.request_job_presets(enqueue)
-    dispatch_send(enqueue, '!dwj list', false);
+    dispatch_send(enqueue, '!dwj list');
 end
 
 function M.request_find(enqueue, text)
     if (enqueue ~= nil and text ~= nil and text ~= '') then
-        dispatch_send(enqueue, string.format('!dwq find %s', text), false);
+        dispatch_send(enqueue, string.format('!dwq find %s', text));
     end
 end
 
@@ -743,15 +739,15 @@ function M.request_bag(enqueue, charname)
     state.bag_charid = charid;
     state.bag_charname = charname;
     state.bags = {};
-    dispatch_send(enqueue, string.format('!dwq bag %s', charname), false);
+    dispatch_send(enqueue, string.format('!dwq bag %s', charname));
 end
 
 function M.request_rule_sets(enqueue)
-    dispatch_send(enqueue, '!dwg list', false);
+    dispatch_send(enqueue, '!dwg list');
 end
 
 function M.request_rule_presets(enqueue)
-    dispatch_send(enqueue, '!dwg presets', false);
+    dispatch_send(enqueue, '!dwg presets');
 end
 
 --- Retry roster fetch while a pick screen is waiting (hub open loop).
