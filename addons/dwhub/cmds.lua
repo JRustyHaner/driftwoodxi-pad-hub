@@ -250,6 +250,20 @@ function M.drift_board()
     return '!drift';
 end
 
+M.DRIFT_SLOTS = { 'd1', 'd2', 'd3', 'd4', 'w1', 'w2', 'w3', 'w4' };
+
+function M.drift_balance()
+    return '!drift balance';
+end
+
+function M.drift_accept(slot)
+    return string.format('!drift accept %s', slot);
+end
+
+function M.drift_abandon(slot)
+    return string.format('!drift abandon %s', slot);
+end
+
 function M.fish_status()
     return '!fish';
 end

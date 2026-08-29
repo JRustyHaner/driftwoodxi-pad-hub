@@ -74,12 +74,4 @@ function M.merc(ctx)
     })(ctx);
 end
 
-function M.drift(ctx)
-    return stub_screen('drift', 'Drift', {
-        { id = 'board', label = 'Drift Board', desc = 'Daily and weekly contracts (!drift).', cmd = cmds.drift_board() },
-        { id = 'accept', label = 'Accept…', desc = 'Contract picks — #51.', dim = true },
-        { id = 'shop', label = 'Shops…', desc = 'Augments and outfitter — #52.', dim = true },
-    })(ctx);
-end
-
 return M;
