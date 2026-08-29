@@ -279,8 +279,73 @@ function M.market_summary()
     return '!market';
 end
 
-function M.merc_board()
-    return '!merc board';
+function M.merc_board(job, page)
+    local parts = { '!merc', 'board' };
+    if (job ~= nil and job ~= '' and job ~= 'ALL') then
+        parts[#parts + 1] = string.upper(job);
+    end
+    if (page ~= nil) then
+        parts[#parts + 1] = tostring(tonumber(page) or 1);
+    end
+    return table.concat(parts, ' ');
+end
+
+function M.dwm_board(job, page)
+    local parts = { '!dwm', 'board' };
+    if (job ~= nil and job ~= '' and job ~= 'ALL') then
+        parts[#parts + 1] = string.upper(job);
+    end
+    if (page ~= nil) then
+        parts[#parts + 1] = tostring(tonumber(page) or 1);
+    end
+    return table.concat(parts, ' ');
+end
+
+function M.merc_info(ref)
+    return string.format('!merc info %s', ref or '');
+end
+
+function M.merc_quote(ref)
+    return string.format('!merc quote %s', ref or '');
+end
+
+function M.merc_hire(ref)
+    return string.format('!merc hire %s', ref or '');
+end
+
+function M.merc_call(loadout)
+    if (loadout ~= nil and loadout ~= '') then
+        return string.format('!merc call %s', loadout);
+    end
+    return '!merc call';
+end
+
+function M.merc_dismiss()
+    return '!merc dismiss';
+end
+
+function M.merc_contracts()
+    return '!merc contracts';
+end
+
+function M.merc_list()
+    return '!merc list';
+end
+
+function M.merc_unlist()
+    return '!merc unlist';
+end
+
+function M.merc_listings()
+    return '!merc listings';
+end
+
+function M.merc_earnings()
+    return '!merc earnings';
+end
+
+function M.merc_claim()
+    return '!merc claim';
 end
 
 function M.tracker_sync()

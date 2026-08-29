@@ -90,6 +90,18 @@ local function new_state()
             items = {},
         },
         warehouse_expecting_page = nil,
+        -- Merc board (_DWMDATA / #55)
+        merc = {
+            board = {
+                page = 1,
+                total_pages = 1,
+                total = 0,
+                page_size = 5,
+                job_filter = nil,
+                entries = {},
+            },
+            board_expecting = nil,
+        },
     };
 end
 
@@ -572,6 +584,85 @@ local function handle_warehouse(line)
     end
 end
 
+local function dwm_board_cmd(job, page)
+    local parts = { '!dwm', 'board' };
+    if (job ~= nil and job ~= '' and job ~= 'ALL') then
+        parts[#parts + 1] = string.upper(job);
+    end
+    if (page ~= nil) then
+        parts[#parts + 1] = tostring(tonumber(page) or 1);
+    end
+    return table.concat(parts, ' ');
+end
+
+local function handle_merc(line)
+    local parts = split(line, '|');
+    local kind = parts[1];
+    local inbound = channel_inbound('merc');
+    local board = state.merc.board;
+
+    if (kind == 'd') then
+        local version = tonumber(parts[2]) or 0;
+        if (version ~= PROTOCOL) then
+            state.status = string.format('Protocol %d (expected %d) on merc', version, PROTOCOL);
+            inbound.verb = nil;
+            return;
+        end
+        inbound.verb = parts[3];
+        if (inbound.verb == 'board') then
+            board.entries = {};
+        end
+        return;
+    end
+
+    if (kind == 'm' or kind == 'e') then
+        state.status = line:sub(3);
+        return;
+    end
+
+    if (inbound.verb == nil) then
+        return;
+    end
+
+    if (kind == 'z') then
+        if (inbound.verb == 'board') then
+            table.sort(board.entries, function(a, b)
+                return string.lower(a.name or '') < string.lower(b.name or '');
+            end);
+            state.merc.board_expecting = nil;
+        end
+        inbound.verb = nil;
+        return;
+    end
+
+    if (inbound.verb == 'board') then
+        if (kind == 'n') then
+            board.page = tonumber(parts[2]) or board.page;
+            board.total = tonumber(parts[4]) or board.total;
+            board.page_size = tonumber(parts[5]) or board.page_size;
+            board.total_pages = tonumber(parts[6]) or board.total_pages;
+            if (board.total_pages < 1) then
+                board.total_pages = 1;
+            end
+            return;
+        end
+        if (kind == 'r') then
+            local expecting = state.merc.board_expecting;
+            if (expecting ~= nil and board.page ~= expecting.page) then
+                return;
+            end
+            board.entries[#board.entries + 1] = {
+                ref = parts[2] or '',
+                name = parts[3] or '?',
+                job = parts[4] or '',
+                level = tonumber(parts[5]) or 0,
+                price = tonumber(parts[6]) or 0,
+            };
+            return;
+        end
+    end
+end
+
 --- Observe-only handler for expansion senders (buffer until child issues add parsers).
 local function handle_stub_envelope(channel, line)
     local parts = split(line, '|');
@@ -624,6 +715,8 @@ function M.handle_machine(sender, message)
         handle_tracker(message);
     elseif (channel == 'warehouse') then
         handle_warehouse(message);
+    elseif (channel == 'merc') then
+        handle_merc(message);
     else
         handle_stub_envelope(channel, message);
     end
@@ -1052,6 +1145,33 @@ function M.request_warehouse_page(enqueue, page)
     state.warehouse.page = page;
     state.warehouse.items = {};
     dispatch_send(enqueue, string.format('!dwu page %d', page));
+end
+
+function M.merc_board_entries()
+    return state.merc.board.entries;
+end
+
+function M.merc_board_info()
+    local board = state.merc.board;
+    return {
+        page = board.page,
+        total_pages = board.total_pages,
+        total = board.total,
+        page_size = board.page_size,
+        job_filter = board.job_filter,
+    };
+end
+
+function M.request_merc_board(enqueue, job, page)
+    page = tonumber(page) or 1;
+    if (page < 1) then
+        page = 1;
+    end
+    state.merc.board_expecting = { job = job, page = page };
+    state.merc.board.page = page;
+    state.merc.board.job_filter = job;
+    state.merc.board.entries = {};
+    dispatch_send(enqueue, dwm_board_cmd(job, page));
 end
 
 --- Retry roster fetch while a pick screen is waiting (hub open loop).

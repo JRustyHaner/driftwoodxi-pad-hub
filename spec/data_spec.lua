@@ -115,6 +115,14 @@ describe('data machine parse', function()
         end);
     end);
 
+    describe('merc board fixture', function()
+        it('parses merc listings from _DWMDATA', function()
+            fixtures.apply_machine(data, fixtures.load('merc_board'));
+            assert.equals(2, #data.merc_board_entries());
+            assert.equals('m102', data.merc_board_entries()[2].ref);
+        end);
+    end);
+
     describe('port list fixture', function()
         it('parses starred and plain destination lines', function()
             fixtures.apply_port(data, fixtures.load('port_list'));
