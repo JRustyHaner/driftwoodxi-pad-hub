@@ -7,6 +7,7 @@ local jobs = require('screens.jobs');
 local rules = require('screens.rules');
 local port = require('screens.port');
 local items = require('screens.items');
+local expansion = require('screens.expansion');
 
 local M = {};
 
@@ -20,6 +21,17 @@ M.jobs = jobs.jobs;
 M.rules = rules.rules;
 M.port = port.port;
 M.items = items.items;
+
+M.storage = expansion.storage;
+M.market = expansion.market;
+M.merc = expansion.merc;
+M.quests = expansion.quests;
+M.drift = expansion.drift;
+M.fish = expansion.fish;
+M.raid = expansion.raid;
+M.arena = expansion.arena;
+M.scan = expansion.scan;
+M.engage = expansion.engage;
 
 M._fire = H.fire;
 M._pick_list = H.pick_list;

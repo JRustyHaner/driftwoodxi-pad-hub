@@ -228,4 +228,53 @@ function M.job_spell_list(tag)
     return string.format('!%s spells', tag);
 end
 
+--- Expansion category stubs (#44) — typed ! commands only.
+
+function M.warehouse_summary()
+    return '!warehouse';
+end
+
+function M.market_summary()
+    return '!market';
+end
+
+function M.merc_board()
+    return '!merc board';
+end
+
+function M.tracker_sync()
+    return '!dwt sync';
+end
+
+function M.drift_board()
+    return '!drift';
+end
+
+function M.fish_status()
+    return '!fish';
+end
+
+function M.raid_board()
+    return '!raid';
+end
+
+function M.arena_board()
+    return '!arena';
+end
+
+function M.scan_target(treasure_hunter)
+    if (treasure_hunter ~= nil) then
+        return string.format('!scan 0 %d', treasure_hunter);
+    end
+    return '!scan';
+end
+
+function M.trustengage_status()
+    return '!trustengage';
+end
+
+function M.trustengage_mode(mode)
+    return string.format('!trustengage %d', mode or 0);
+end
+
 return M;

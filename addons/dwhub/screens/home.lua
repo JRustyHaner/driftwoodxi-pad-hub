@@ -37,9 +37,9 @@ M.HOME_GROUPS = {
         desc = 'Account bags, gear, and economy.',
         categories = {
             { label = 'Items', category = 'Items', desc = 'Find, send, fetch, and equip across your account.' },
-            { label = 'Storage', desc = 'Account warehouse (!warehouse) — coming soon.', dim = true },
-            { label = 'Market', desc = 'Player market (!market) — coming soon.', dim = true },
-            { label = 'Merc', desc = 'Mercenary board (!merc) — coming soon.', dim = true },
+            { label = 'Storage', category = 'Storage', desc = 'Account warehouse (!warehouse).' },
+            { label = 'Market', category = 'Market', desc = 'Player market (!market).' },
+            { label = 'Merc', category = 'Merc', desc = 'Mercenary board (!merc).' },
         },
     },
     {
@@ -47,9 +47,9 @@ M.HOME_GROUPS = {
         label = 'Quests and Crafts',
         desc = 'Journal, contracts, and skilling.',
         categories = {
-            { label = 'Quests', desc = 'Quest journal (/tracker) — coming soon.', dim = true },
-            { label = 'Drift', desc = 'Drift Board contracts — coming soon.', dim = true },
-            { label = 'Fish', desc = 'Fishing guide (!fish) — coming soon.', dim = true },
+            { label = 'Quests', category = 'Quests', desc = 'Quest journal (!dwt sync).' },
+            { label = 'Drift', category = 'Drift', desc = 'Drift Board contracts (!drift).' },
+            { label = 'Fish', category = 'Fish', desc = 'Fishing guide (!fish).' },
             { label = 'Craft', desc = 'Crafting ledger — coming soon.', dim = true },
         },
     },
@@ -58,8 +58,8 @@ M.HOME_GROUPS = {
         label = 'Instances',
         desc = 'Raids and Gauntlet from anywhere.',
         categories = {
-            { label = 'Raid', desc = 'Boss trials (!raid) — coming soon.', dim = true },
-            { label = 'Arena', desc = 'Gauntlet waves (!arena) — coming soon.', dim = true },
+            { label = 'Raid', category = 'Raid', desc = 'Boss trials (!raid).' },
+            { label = 'Arena', category = 'Arena', desc = 'Gauntlet waves (!arena).' },
         },
     },
     {
@@ -67,8 +67,8 @@ M.HOME_GROUPS = {
         label = 'Field',
         desc = 'Target info and engage helpers.',
         categories = {
-            { label = 'Scan', desc = 'Scan target (!scan) — coming soon.', dim = true },
-            { label = 'Engage', desc = 'Auto-target and trust engage — coming soon.', dim = true },
+            { label = 'Scan', category = 'Scan', desc = 'Scan target (!scan).' },
+            { label = 'Engage', category = 'Engage', desc = 'Trust engage and auto-target.' },
         },
     },
 };
