@@ -41,6 +41,20 @@ All work follows **issue → branch → code → test → document → PR → me
 
 Deck-oriented steps: [docs/DECK.md](./docs/DECK.md). Addon readme: [addons/dwhub/README.md](./addons/dwhub/README.md).
 
+## Local test loop (Desktop)
+
+After merging hub changes, sync into your Ashita tree and reload in game:
+
+```bash
+chmod +x scripts/sync-to-ashita.sh
+./scripts/sync-to-ashita.sh
+# or: DRIFTWOOD_ASHITA=~/Downloads/driftwoodxi-installer/Ashita ./scripts/sync-to-ashita.sh
+```
+
+In game: `/addon reload dwhub` then `/dwhub`.
+
+Auto-detect order: `$DRIFTWOOD_ASHITA` → `~/ffxi/Ashita` → `~/Downloads/driftwoodxi-installer/Ashita`.
+
 ## Related
 
 - Deck launch helpers: [driftwoodxi-steamdeck](https://github.com/JRustyHaner/driftwoodxi-steamdeck)
