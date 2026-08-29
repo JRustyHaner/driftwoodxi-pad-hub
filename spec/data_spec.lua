@@ -115,6 +115,14 @@ describe('data machine parse', function()
         end);
     end);
 
+    describe('market page fixture', function()
+        it('parses listings from _DWADATA', function()
+            fixtures.apply_machine(data, fixtures.load('market_page'));
+            assert.equals(2, #data.market_listings());
+            assert.equals('a1043', data.market_listings()[2].ref);
+        end);
+    end);
+
     describe('merc board fixture', function()
         it('parses merc listings from _DWMDATA', function()
             fixtures.apply_machine(data, fixtures.load('merc_board'));

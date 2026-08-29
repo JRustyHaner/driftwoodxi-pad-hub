@@ -41,7 +41,7 @@ Account bags, gear, and economy.
 |--------|--------|-------|
 | Items | Shipped | Find, send, fetch, equip, box, gear, optimize |
 | Storage | Shipped (#53–#54) | `!warehouse` summary, browse, take, put, stash, pin, buy slot |
-| Market | Planned (#56–#57) | `!market` / dwah |
+| Market | Shipped (#56–#57) | Browse, sell, claim, buy orders, fill/cancel |
 | Merc | Shipped (#55) | `!merc` board, hire, call, list, earnings |
 
 ---

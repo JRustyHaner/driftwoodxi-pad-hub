@@ -2,7 +2,7 @@ package.path = 'addons/dwhub/?.lua;' .. package.path;
 
 local screens = require('screens');
 
-describe('expansion stub screens', function()
+describe('hub category screens', function()
     local ctx = {
         enqueue = function() end,
         set_status = function() end,
@@ -22,7 +22,7 @@ describe('expansion stub screens', function()
     };
 
     for _, cat in ipairs(categories) do
-        it('loads ' .. cat.title .. ' stub with rows', function()
+        it('loads ' .. cat.title .. ' with rows', function()
             local screen = screens[cat.fn](ctx);
             assert.equals(cat.id, screen.id);
             assert.equals(cat.title, screen.title);

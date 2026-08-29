@@ -29,24 +29,46 @@ describe('raid screen', function()
         assert.equals('!raid enter tidebound easy', cmds.raid_enter('tidebound', 'easy'));
         assert.equals('!raid leave', cmds.raid_leave());
         assert.equals('!raid marks', cmds.raid_marks());
+        assert.equals('!raid shop supplies', cmds.raid_shop('supplies'));
+        assert.equals('!raid buy 21', cmds.raid_buy('21'));
+        assert.equals('!raid confirm', cmds.raid_confirm());
+        assert.equals('!raid reforge', cmds.raid_reforge());
     end);
 
-    it('lists four raid rows per #49', function()
+    it('lists six raid rows per #49 and #58', function()
         local screen = screens.raid(ctx);
         local rows = screen:rows();
-        assert.equals(4, #rows);
+        assert.equals(6, #rows);
         assert.equals('Board', rows[1].label);
         assert.equals('Enter trial…', rows[2].label);
         assert.equals('Leave', rows[3].label);
         assert.equals('Driftmarks', rows[4].label);
+        assert.equals('Shop…', rows[5].label);
+        assert.equals('Reforge', rows[6].label);
     end);
 
-    it('queues board, leave, and marks directly', function()
+    it('queues board, leave, marks, and reforge directly', function()
         local screen = screens.raid(ctx);
         screen.on_confirm(screen, 1, { push = function() end });
         screen.on_confirm(screen, 3, { push = function() end });
         screen.on_confirm(screen, 4, { push = function() end });
-        assert.same({ '!raid', '!raid leave', '!raid marks' }, queued);
+        screen.on_confirm(screen, 6, { push = function() end });
+        assert.same({ '!raid', '!raid leave', '!raid marks', '!raid reforge' }, queued);
+    end);
+
+    it('shop buy flow queues buy then confirm', function()
+        local screen = screens.raid(ctx);
+        local n = nav.new();
+        screen.on_confirm(screen, 5, n);
+        n:current().on_confirm(n:current(), 1, n);
+        local entry = n:current();
+        entry.search[1] = '21';
+        entry.on_confirm(entry, 1, n);
+        local confirm = n:current();
+        confirm.on_confirm(confirm, 1, n);
+        assert.equals('!raid shop supplies', queued[1]);
+        assert.equals('!raid buy 21', queued[2]);
+        assert.equals('!raid confirm', queued[3]);
     end);
 
     it('enter flow picks boss, tier, and confirm', function()

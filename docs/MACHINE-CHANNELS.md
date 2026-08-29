@@ -50,12 +50,12 @@ z
 | Jobs | `!jobs`, `!dwj` | `!dwj` | `_DWJDATA` | **Shipped** |
 | Rules | `!squad rules`, `!dwg` | `!dwg` | `_DWGDATA` | **Shipped** |
 | Storage | `!warehouse`, `!dwu` | `!dwu` | `_DWUDATA` | **Shipped** (#53–#54) |
-| Market | `!market`, `!dwa` | `!dwa` | `_DWADATA` | Stub observe |
+| Market | `!market`, `!dwa` | `!dwa` | `_DWADATA` | **Shipped** (#56–#57) |
 | Merc | `!merc`, `!dwm` | `!dwm` | `_DWMDATA` | **Shipped** (#55) |
 | Quests | `/tracker`, `!dwt sync` | `!dwt` | `_DWTDATA` | Tracker parser shipped (#50) |
 | Drift | `!drift`, shops, contracts | `!dwn` / `!dwo` | `_DWNDATA` / `_DWODATA` | Drift UI shipped (#51–#52) |
 | Fish | `!fish`, `!fish next`, … | `!dwf` | `_DWFDATA` | Fish UI shipped (#47); machine parse stub |
-| Raid | `!raid`, `!raid enter <boss> <tier>`, … | *(chat)* | *(TBD)* | Raid UI shipped (#49); shop deferred #58 |
+| Raid | `!raid`, `!raid enter <boss> <tier>`, … | *(chat)* | *(TBD)* | **Shipped** (#49 enter, #58 shop) |
 | Arena | `!arena`, `!arena enter`, `!arena leave` | *(chat)* | *(none)* | Arena UI shipped (#48); chat-only |
 | Scan | `!scan`, `!scan 0 N` | *(chat)* / `!dwx`? | `_DWXDATA` | Scan UI shipped (#46); chat-only |
 | Engage | `!trustengage`, `/dwengage on\|off` | `!dwe`? | `_DWEDATA` | Engage UI shipped (#45); machine parse stub |
@@ -88,6 +88,18 @@ z
 ```
 
 Fixture: `spec/fixtures/warehouse_page.lines`
+
+**Market listings page (`!market page N` / `!dwa page N`):**
+
+```
+d|1|page
+n|1|2|50|20|3
+r|a1042|Fire Crystal|500|12
+r|a1043|Hi-Potion|120|5
+z
+```
+
+Fixture: `spec/fixtures/market_page.lines`
 
 **Warehouse summary (`!warehouse` / `!dwu`):**
 

@@ -279,6 +279,67 @@ function M.market_summary()
     return '!market';
 end
 
+function M.market_page(page)
+    return string.format('!market page %d', tonumber(page) or 1);
+end
+
+function M.dwa_page(page)
+    return string.format('!dwa page %d', tonumber(page) or 1);
+end
+
+function M.market_history()
+    return '!market history';
+end
+
+function M.market_sell(stack)
+    return string.format('!market sell %s', stack or '');
+end
+
+function M.market_buy(ref)
+    return string.format('!market buy %s', ref or '');
+end
+
+function M.market_cancel(ref)
+    if (ref ~= nil and ref ~= '') then
+        return string.format('!market cancel %s', ref);
+    end
+    return '!market cancel';
+end
+
+function M.market_claim()
+    return '!market claim';
+end
+
+function M.market_collect()
+    return '!market collect';
+end
+
+function M.market_order(qty, stack)
+    return string.format('!market order %d %s', tonumber(qty) or 1, stack or '');
+end
+
+function M.market_orders(page)
+    if (page ~= nil) then
+        return string.format('!market orders %d', tonumber(page) or 1);
+    end
+    return '!market orders';
+end
+
+function M.dwa_orders(page)
+    return string.format('!dwa orders %d', tonumber(page) or 1);
+end
+
+function M.market_fill(ref, count)
+    if (count ~= nil) then
+        return string.format('!market fill %d %s', tonumber(count) or 1, ref or '');
+    end
+    return string.format('!market fill %s', ref or '');
+end
+
+function M.market_cancelorder(ref)
+    return string.format('!market cancelorder %s', ref or '');
+end
+
 function M.merc_board(job, page)
     local parts = { '!merc', 'board' };
     if (job ~= nil and job ~= '' and job ~= 'ALL') then
@@ -431,6 +492,24 @@ end
 
 function M.raid_marks()
     return '!raid marks';
+end
+
+M.RAID_SHOP_TABS = { 'supplies', 'onehand', 'twohand', 'ranged', 'armor' };
+
+function M.raid_shop(tab)
+    return string.format('!raid shop %s', tab or 'supplies');
+end
+
+function M.raid_buy(item)
+    return string.format('!raid buy %s', item or '');
+end
+
+function M.raid_confirm()
+    return '!raid confirm';
+end
+
+function M.raid_reforge()
+    return '!raid reforge';
 end
 
 function M.arena_board()
