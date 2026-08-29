@@ -118,6 +118,17 @@ describe('data machine parse', function()
         end);
     end);
 
+    describe('tracker sync fixture', function()
+        it('parses active quests and missions from _DWTDATA', function()
+            fixtures.apply_machine(data, fixtures.load('tracker_sync'));
+            assert.is_true(data.tracker_synced());
+            assert.equals('Quest #1012', data.tracker_quest_label(data.tracker_active_quests()[1]));
+            assert.equals('Log 0 · step 3 of 12', data.tracker_entry_desc(data.tracker_active_quests()[1]));
+            assert.equals(2, #data.tracker_active_quests());
+            assert.equals(1, #data.tracker_active_missions());
+        end);
+    end);
+
     describe('channel isolation', function()
         it('keeps squad roster when jobs who interleaves', function()
             data.handle_machine('_DWSDATA', 'd|1|who');

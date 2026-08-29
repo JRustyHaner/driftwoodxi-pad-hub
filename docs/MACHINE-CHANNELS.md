@@ -52,7 +52,7 @@ z
 | Storage | `!warehouse`, `!dwu` | `!dwu` | `_DWUDATA` | Stub observe |
 | Market | `!market`, `!dwa` | `!dwa` | `_DWADATA` | Stub observe |
 | Merc | `!merc`, `!dwm` | `!dwm` | `_DWMDATA` | Stub observe |
-| Quests | `/tracker`, `!dwt` | `!dwt` | `_DWTDATA` | Stub observe |
+| Quests | `/tracker`, `!dwt sync` | `!dwt` | `_DWTDATA` | Tracker parser shipped (#50) |
 | Drift | `!drift`, `!dwn` / `!dwo` | `!dwn` / `!dwo` | `_DWNDATA` / `_DWODATA` | Stub observe (TBD) |
 | Fish | `!fish`, `!fish next`, … | `!dwf` | `_DWFDATA` | Fish UI shipped (#47); machine parse stub |
 | Raid | `!raid`, `!raid enter <boss> <tier>`, … | *(chat)* | *(TBD)* | Raid UI shipped (#49); shop deferred #58 |
