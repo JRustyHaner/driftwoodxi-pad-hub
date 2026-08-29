@@ -21,6 +21,8 @@ describe('cmds expansion stubs', function()
         assert.equals('!fish route', cmds.fish_route());
         assert.equals('!raid', cmds.raid_board());
         assert.equals('!arena', cmds.arena_board());
+        assert.equals('!arena enter', cmds.arena_enter());
+        assert.equals('!arena leave', cmds.arena_leave());
     end);
 
     it('builds scan and trustengage commands', function()

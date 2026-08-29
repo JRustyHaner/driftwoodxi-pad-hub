@@ -97,11 +97,4 @@ function M.raid(ctx)
     })(ctx);
 end
 
-function M.arena(ctx)
-    return stub_screen('arena', 'Arena', {
-        { id = 'board', label = 'Gauntlet', desc = 'Arena status (!arena).', cmd = cmds.arena_board() },
-        { id = 'enter', label = 'Enter…', desc = 'Warp party in — #48 (confirm gate).', dim = true },
-    })(ctx);
-end
-
 return M;

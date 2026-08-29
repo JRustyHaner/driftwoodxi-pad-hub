@@ -274,6 +274,14 @@ function M.arena_board()
     return '!arena';
 end
 
+function M.arena_enter()
+    return '!arena enter';
+end
+
+function M.arena_leave()
+    return '!arena leave';
+end
+
 function M.scan_target(treasure_hunter)
     if (treasure_hunter ~= nil) then
         return string.format('!scan 0 %d', treasure_hunter);
