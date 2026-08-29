@@ -19,6 +19,17 @@ local SENDERS = {
     ['_DWDATA']  = 'bags',
     ['_DWJDATA'] = 'jobs',
     ['_DWGDATA'] = 'rules',
+    -- Expansion channels (#44) — observe-only until child issues parse payloads.
+    ['_DWUDATA'] = 'warehouse',
+    ['_DWADATA'] = 'market',
+    ['_DWMDATA'] = 'merc',
+    ['_DWTDATA'] = 'tracker',
+    ['_DWNDATA'] = 'drift',
+    ['_DWODATA'] = 'drift',
+    ['_DWFDATA'] = 'fish',
+    ['_DWRDATA'] = 'report',
+    ['_DWEDATA'] = 'engage',
+    ['_DWXDATA'] = 'scan',
 };
 
 local function split(text, sep)
@@ -350,6 +361,44 @@ local function handle_rules(line)
     inbound.buffer[#inbound.buffer + 1] = parts;
 end
 
+--- Observe-only handler for expansion senders (buffer until child issues add parsers).
+local function handle_stub_envelope(channel, line)
+    local parts = split(line, '|');
+    local kind = parts[1];
+    local inbound = channel_inbound(channel);
+
+    if (kind == 'd') then
+        local version = tonumber(parts[2]) or 0;
+        if (version ~= PROTOCOL) then
+            state.status = string.format('Protocol %d (expected %d) on %s', version, PROTOCOL, channel);
+            inbound.verb = nil;
+            inbound.buffer = nil;
+            return;
+        end
+        inbound.verb = parts[3];
+        inbound.buffer = {};
+        return;
+    end
+
+    if (kind == 'm' or kind == 'e') then
+        state.status = line:sub(3);
+        return;
+    end
+
+    if (inbound.verb == nil) then
+        return;
+    end
+
+    if (kind == 'z') then
+        inbound.verb = nil;
+        inbound.buffer = nil;
+        return;
+    end
+
+    inbound.buffer = inbound.buffer or {};
+    inbound.buffer[#inbound.buffer + 1] = parts;
+end
+
 --- Apply one machine-channel line (sender name + payload).
 function M.handle_machine(sender, message)
     local channel = SENDERS[sender];
@@ -358,10 +407,24 @@ function M.handle_machine(sender, message)
     end
     if (channel == 'rules') then
         handle_rules(message);
-    else
+    elseif (channel == 'squad' or channel == 'bags' or channel == 'jobs') then
         handle_squad_or_bags_or_jobs(channel, message);
+    else
+        handle_stub_envelope(channel, message);
     end
     return true;
+end
+
+function M.known_senders()
+    local copy = {};
+    for sender, channel in pairs(SENDERS) do
+        copy[sender] = channel;
+    end
+    return copy;
+end
+
+function M.channel_for_sender(sender)
+    return SENDERS[sender];
 end
 
 --- Parse a human !port list chat line into a destination row when expecting.
@@ -827,5 +890,6 @@ M._split = split;
 M._parse_packed = parse_packed;
 M._PROTOCOL = PROTOCOL;
 M._CHAR_SELF = CHAR_SELF;
+M._SENDERS = SENDERS;
 
 return M;

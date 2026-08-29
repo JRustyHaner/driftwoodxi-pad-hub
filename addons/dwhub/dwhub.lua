@@ -9,7 +9,7 @@
 
 addon.name    = 'dwhub';
 addon.author  = 'DriftwoodXI Pad Hub';
-addon.version = '0.4.4';
+addon.version = '0.5.0';
 addon.desc    = 'Pad-first DriftwoodXI hub — Party, Inventory, Quests, Instances, Field.';
 addon.link    = 'https://github.com/JRustyHaner/driftwoodxi-pad-hub';
 
@@ -59,26 +59,29 @@ local function make_ctx()
     };
 end
 
+local CATEGORY_SCREENS = {
+    Squad = function(ctx) return screens.squad(ctx); end,
+    Jobs = function(ctx) return screens.jobs(ctx); end,
+    Rules = function(ctx) return screens.rules(ctx); end,
+    Port = function(ctx) return screens.port(ctx); end,
+    Items = function(ctx) return screens.items(ctx); end,
+    Storage = function(ctx) return screens.storage(ctx); end,
+    Market = function(ctx) return screens.market(ctx); end,
+    Merc = function(ctx) return screens.merc(ctx); end,
+    Quests = function(ctx) return screens.quests(ctx); end,
+    Drift = function(ctx) return screens.drift(ctx); end,
+    Fish = function(ctx) return screens.fish(ctx); end,
+    Raid = function(ctx) return screens.raid(ctx); end,
+    Arena = function(ctx) return screens.arena(ctx); end,
+    Scan = function(ctx) return screens.scan(ctx); end,
+    Engage = function(ctx) return screens.engage(ctx); end,
+};
+
 local function open_category(name, n)
     local ctx = make_ctx();
-    if (name == 'Squad') then
-        n:push(screens.squad(ctx));
-        return;
-    end
-    if (name == 'Jobs') then
-        n:push(screens.jobs(ctx));
-        return;
-    end
-    if (name == 'Rules') then
-        n:push(screens.rules(ctx));
-        return;
-    end
-    if (name == 'Port') then
-        n:push(screens.port(ctx));
-        return;
-    end
-    if (name == 'Items') then
-        n:push(screens.items(ctx));
+    local build = CATEGORY_SCREENS[name];
+    if (build ~= nil) then
+        n:push(build(ctx));
         return;
     end
     n:push(screens.placeholder(name, 'Unknown category.'));
