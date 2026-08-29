@@ -12,6 +12,7 @@ local scan = require('screens.scan');
 local fish = require('screens.fish');
 local arena = require('screens.arena');
 local raid = require('screens.raid');
+local quests = require('screens.quests');
 local expansion = require('screens.expansion');
 
 local M = {};
@@ -37,10 +38,11 @@ M.arena = arena.arena;
 
 M.raid = raid.raid;
 
+M.quests = quests.quests;
+
 M.storage = expansion.storage;
 M.market = expansion.market;
 M.merc = expansion.merc;
-M.quests = expansion.quests;
 M.drift = expansion.drift;
 
 M._fire = H.fire;

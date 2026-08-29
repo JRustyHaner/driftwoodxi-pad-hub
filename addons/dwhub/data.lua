@@ -74,6 +74,12 @@ local function new_state()
         spell_expecting = false,
         spell_last_request = nil,
         inbound = {},
+        -- Tracker (_DWTDATA / #50)
+        tracker_nation = nil,
+        tracker_rank = nil,
+        tracker_active_quests = {},
+        tracker_active_missions = {},
+        tracker_synced = false,
     };
 end
 
@@ -361,6 +367,114 @@ local function handle_rules(line)
     inbound.buffer[#inbound.buffer + 1] = parts;
 end
 
+local function reset_tracker_sync()
+    state.tracker_nation = nil;
+    state.tracker_rank = nil;
+    state.tracker_active_quests = {};
+    state.tracker_active_missions = {};
+    state.tracker_synced = false;
+end
+
+--- Parse _DWTDATA sync envelopes (matches dwtracker record layout).
+local function handle_tracker(line)
+    local parts = split(line, '|');
+    local kind = parts[1];
+    local inbound = channel_inbound('tracker');
+
+    if (kind == 'd') then
+        local version = tonumber(parts[2]) or 0;
+        if (version ~= PROTOCOL) then
+            state.status = string.format('Protocol %d (expected %d) on tracker', version, PROTOCOL);
+            inbound.verb = nil;
+            return;
+        end
+        inbound.verb = parts[3];
+        if (inbound.verb == 'sync') then
+            reset_tracker_sync();
+        end
+        return;
+    end
+
+    if (kind == 'm' or kind == 'e') then
+        state.status = line:sub(3);
+        return;
+    end
+
+    if (inbound.verb == nil) then
+        return;
+    end
+
+    if (kind == 'z') then
+        if (inbound.verb == 'sync') then
+            state.tracker_synced = true;
+            state.status = 'Journal synced.';
+        end
+        inbound.verb = nil;
+        return;
+    end
+
+    if (kind == 's') then
+        state.tracker_nation = tonumber(parts[2]);
+        state.tracker_rank = tonumber(parts[3]);
+        return;
+    end
+
+    if (kind == 'aq') then
+        local log = tonumber(parts[2]) or 0;
+        for _, entry in ipairs(split(parts[3] or '', ',')) do
+            if (entry ~= '') then
+                local bits = split(entry, ':');
+                if (#bits >= 3) then
+                    state.tracker_active_quests[#state.tracker_active_quests + 1] = {
+                        log = log,
+                        id = tonumber(bits[1]) or 0,
+                        step = tonumber(bits[2]) or 0,
+                        n = tonumber(bits[3]) or 0,
+                    };
+                end
+            end
+        end
+        return;
+    end
+
+    if (kind == 'am') then
+        local log = tonumber(parts[2]) or 0;
+        local bits = split(parts[3] or '', ':');
+        if (#bits >= 3) then
+            state.tracker_active_missions[log] = {
+                log = log,
+                id = tonumber(bits[1]) or 0,
+                step = tonumber(bits[2]) or 0,
+                n = tonumber(bits[3]) or 0,
+            };
+        end
+        return;
+    end
+
+    if (kind == 'u') then
+        local log = tonumber(parts[3]) or 0;
+        local id = tonumber(parts[4]) or 0;
+        if (parts[2] == 'q') then
+            state.tracker_active_quests[#state.tracker_active_quests + 1] = {
+                log = log,
+                id = id,
+                step = 0,
+                n = 0,
+                unclear = true,
+            };
+        elseif (parts[2] == 'm') then
+            state.tracker_active_missions[log] = {
+                log = log,
+                id = id,
+                step = 0,
+                n = 0,
+                unclear = true,
+            };
+        end
+        return;
+    end
+end
+
 --- Observe-only handler for expansion senders (buffer until child issues add parsers).
 local function handle_stub_envelope(channel, line)
     local parts = split(line, '|');
@@ -409,6 +523,8 @@ function M.handle_machine(sender, message)
         handle_rules(message);
     elseif (channel == 'squad' or channel == 'bags' or channel == 'jobs') then
         handle_squad_or_bags_or_jobs(channel, message);
+    elseif (channel == 'tracker') then
+        handle_tracker(message);
     else
         handle_stub_envelope(channel, message);
     end
@@ -850,6 +966,60 @@ function M.request_port_list(enqueue, tab, page)
             enqueue(string.format('!port list %s', tab));
         end
     end
+end
+
+function M.tracker_active_quests()
+    local copy = {};
+    for i, q in ipairs(state.tracker_active_quests) do
+        copy[i] = q;
+    end
+    return copy;
+end
+
+function M.tracker_active_missions()
+    local copy = {};
+    for _, m in pairs(state.tracker_active_missions) do
+        copy[#copy + 1] = m;
+    end
+    table.sort(copy, function(a, b)
+        return (a.log or 0) < (b.log or 0);
+    end);
+    return copy;
+end
+
+function M.tracker_synced()
+    return state.tracker_synced;
+end
+
+function M.tracker_entry_desc(entry)
+    if (entry == nil) then
+        return '';
+    end
+    if (entry.unclear) then
+        return string.format('Log %d · step unclear', entry.log or 0);
+    end
+    if ((entry.n or 0) > 0) then
+        return string.format('Log %d · step %d of %d', entry.log or 0, entry.step or 0, entry.n or 0);
+    end
+    return string.format('Log %d · active', entry.log or 0);
+end
+
+function M.tracker_quest_label(entry)
+    if (entry == nil) then
+        return '?';
+    end
+    return string.format('Quest #%d', entry.id or 0);
+end
+
+function M.tracker_mission_label(entry)
+    if (entry == nil) then
+        return '?';
+    end
+    return string.format('Mission #%d', entry.id or 0);
+end
+
+function M.request_tracker_sync(ctx_or_enqueue)
+    dispatch_send(ctx_or_enqueue, '!dwt sync');
 end
 
 --- Wire Ashita packet_in (observe only — do not block machine senders).

@@ -74,13 +74,6 @@ function M.merc(ctx)
     })(ctx);
 end
 
-function M.quests(ctx)
-    return stub_screen('quests', 'Quests', {
-        { id = 'sync', label = 'Sync journal', desc = 'Refresh quest state (!dwt sync).', cmd = cmds.tracker_sync() },
-        { id = 'list', label = 'Quest list…', desc = 'Pick active quest — #50.', dim = true },
-    })(ctx);
-end
-
 function M.drift(ctx)
     return stub_screen('drift', 'Drift', {
         { id = 'board', label = 'Drift Board', desc = 'Daily and weekly contracts (!drift).', cmd = cmds.drift_board() },
