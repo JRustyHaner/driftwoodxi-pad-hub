@@ -32,6 +32,15 @@ describe('cmds', function()
         assert.equals('!squad hints Yakapo', cmds.squad_hints('Yakapo'));
     end);
 
+    it('builds rules use with quoted set names', function()
+        assert.equals('!squad rules use me "My Set"', cmds.rules_use('me', 'My Set'));
+        assert.equals('!squad rules use Tea "Preset: WHM" when WHM', cmds.rules_use_when('Tea', 'Preset: WHM', 'WHM'));
+    end);
+
+    it('builds dwq box for in-transit items', function()
+        assert.equals('!dwq box Yakapo', cmds.dwq_box('Yakapo'));
+    end);
+
     it('builds job cast commands', function()
         assert.equals('!whm cure3 me', cmds.job_cast('whm', 'cure3', 'me'));
         assert.equals('!blm stone', cmds.job_cast('blm', 'stone', nil));

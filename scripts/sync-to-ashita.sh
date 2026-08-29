@@ -31,8 +31,10 @@ resolve_ashita() {
     printf '%s' "$DRIFTWOOD_ASHITA"
     return
   fi
+  local lumoria="${HOME}/.var/app/net.windower.Lumoria/data/prefixes/prefix-1/pfx/drive_c/users/${USER}/AppData/Local/DriftwoodXI/Ashita"
   local candidate
   for candidate in \
+    "$lumoria" \
     "${HOME}/ffxi/Ashita" \
     "${HOME}/Downloads/driftwoodxi-installer/Ashita" \
     "${HOME}/Games/ffxi/Ashita"; do

@@ -84,12 +84,19 @@ function M.rules_status()
     return '!squad rules';
 end
 
+local function quote_rules_name(name)
+    if (name == nil or name == '') then
+        return '""';
+    end
+    return string.format('"%s"', (name:gsub('"', '\\"')));
+end
+
 function M.rules_use(member, setname)
-    return string.format('!squad rules use %s %s', member, setname);
+    return string.format('!squad rules use %s %s', member, quote_rules_name(setname));
 end
 
 function M.rules_use_when(member, setname, job)
-    return string.format('!squad rules use %s %s when %s', member, setname, job);
+    return string.format('!squad rules use %s %s when %s', member, quote_rules_name(setname), job);
 end
 
 function M.rules_presets()
@@ -133,8 +140,9 @@ function M.squad_fetch(char, itemid, qty)
     return string.format('!squad fetch %s %d %d', char, itemid, qty);
 end
 
-function M.squad_box()
-    return '!squad box';
+--- In-transit / delivery box for one character (dwbags uses !dwq box).
+function M.dwq_box(char)
+    return string.format('!dwq box %s', char);
 end
 
 function M.squad_gear(char)
@@ -143,10 +151,6 @@ end
 
 function M.squad_equip(char, slot, item)
     return string.format('!squad equip %s %s %s', char, slot, item);
-end
-
-function M.squad_unpin(char)
-    return string.format('!squad unpin %s', char);
 end
 
 function M.squad_hints(char)
