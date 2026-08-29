@@ -55,7 +55,7 @@ z
 | Quests | `/tracker`, `!dwt` | `!dwt` | `_DWTDATA` | Stub observe |
 | Drift | `!drift`, `!dwn` / `!dwo` | `!dwn` / `!dwo` | `_DWNDATA` / `_DWODATA` | Stub observe (TBD) |
 | Fish | `!fish`, `!fish next`, … | `!dwf` | `_DWFDATA` | Fish UI shipped (#47); machine parse stub |
-| Raid | `!raid` | *(chat)* / `!dwr`? | *(TBD)* | Chat-only today |
+| Raid | `!raid`, `!raid enter <boss> <tier>`, … | *(chat)* | *(TBD)* | Raid UI shipped (#49); shop deferred #58 |
 | Arena | `!arena`, `!arena enter`, `!arena leave` | *(chat)* | *(none)* | Arena UI shipped (#48); chat-only |
 | Scan | `!scan`, `!scan 0 N` | *(chat)* / `!dwx`? | `_DWXDATA` | Scan UI shipped (#46); chat-only |
 | Engage | `!trustengage`, `/dwengage on\|off` | `!dwe`? | `_DWEDATA` | Engage UI shipped (#45); machine parse stub |

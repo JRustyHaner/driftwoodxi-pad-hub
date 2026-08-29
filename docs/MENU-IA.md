@@ -65,7 +65,7 @@ Enter/leave instanced content from anywhere.
 
 | Screen | Status | Notes |
 |--------|--------|-------|
-| Raid | Planned (#49, #58) | Trials + shop |
+| Raid | Shipped (#49) | `!raid`, `!raid enter`, `!raid leave`, `!raid marks` |
 | Arena | Shipped (#48) | `!arena`, `!arena enter`, `!arena leave` |
 
 ---
