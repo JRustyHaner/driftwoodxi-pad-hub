@@ -25,5 +25,7 @@ describe('cmds expansion stubs', function()
         assert.equals('!scan 0 8', cmds.scan_target(8));
         assert.equals('!trustengage', cmds.trustengage_status());
         assert.equals('!trustengage 1', cmds.trustengage_mode(1));
+        assert.equals('/dwengage on', cmds.dwengage_on());
+        assert.equals('/dwengage off', cmds.dwengage_off());
     end);
 end);

@@ -118,13 +118,4 @@ function M.scan(ctx)
     })(ctx);
 end
 
-function M.engage(ctx)
-    return stub_screen('engage', 'Engage', {
-        { id = 'trust', label = 'Trust engage', desc = 'Show or set !trustengage mode.', cmd = cmds.trustengage_status() },
-        { id = 'mode0', label = 'Retail engage', desc = 'Master swings first.', cmd = cmds.trustengage_mode(0) },
-        { id = 'mode1', label = 'Attack on engage', desc = 'Trusts commit when you engage.', cmd = cmds.trustengage_mode(1) },
-        { id = 'dwengage', label = 'Auto-target…', desc = 'Spin to next party target — #45.', dim = true },
-    })(ctx);
-end
-
 return M;

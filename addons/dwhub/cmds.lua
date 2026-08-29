@@ -277,4 +277,12 @@ function M.trustengage_mode(mode)
     return string.format('!trustengage %d', mode or 0);
 end
 
+function M.dwengage_on()
+    return '/dwengage on';
+end
+
+function M.dwengage_off()
+    return '/dwengage off';
+end
+
 return M;
