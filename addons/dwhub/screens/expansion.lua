@@ -89,13 +89,6 @@ function M.drift(ctx)
     })(ctx);
 end
 
-function M.fish(ctx)
-    return stub_screen('fish', 'Fish', {
-        { id = 'status', label = 'Skill & cap', desc = 'Rank cap and next catch (!fish).', cmd = cmds.fish_status() },
-        { id = 'route', label = 'Full route…', desc = '0–110 plan — #47.', dim = true },
-    })(ctx);
-end
-
 function M.raid(ctx)
     return stub_screen('raid', 'Raid', {
         { id = 'board', label = 'Trials', desc = 'Boss board and purse (!raid).', cmd = cmds.raid_board() },
