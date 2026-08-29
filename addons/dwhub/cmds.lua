@@ -270,6 +270,27 @@ function M.raid_board()
     return '!raid';
 end
 
+M.RAID_BOSSES = {
+    'tidebound', 'riptide', 'wakeshell', 'maelstrom',
+    'gravegaze', 'cragmaw', 'zephyr', 'howlmane',
+};
+
+M.RAID_TIERS = {
+    'easy', 'normal', 'difficult', 'savage',
+};
+
+function M.raid_enter(boss, tier)
+    return string.format('!raid enter %s %s', boss, tier);
+end
+
+function M.raid_leave()
+    return '!raid leave';
+end
+
+function M.raid_marks()
+    return '!raid marks';
+end
+
 function M.arena_board()
     return '!arena';
 end

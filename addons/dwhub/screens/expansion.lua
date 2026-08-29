@@ -89,12 +89,4 @@ function M.drift(ctx)
     })(ctx);
 end
 
-function M.raid(ctx)
-    return stub_screen('raid', 'Raid', {
-        { id = 'board', label = 'Trials', desc = 'Boss board and purse (!raid).', cmd = cmds.raid_board() },
-        { id = 'enter', label = 'Enter trial…', desc = 'Warp in — #49 (confirm gate).', dim = true },
-        { id = 'shop', label = 'Shop…', desc = 'Driftmarks gear — #58.', dim = true },
-    })(ctx);
-end
-
 return M;
