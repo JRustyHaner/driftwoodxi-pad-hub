@@ -51,7 +51,7 @@ z
 | Rules | `!squad rules`, `!dwg` | `!dwg` | `_DWGDATA` | **Shipped** |
 | Storage | `!warehouse`, `!dwu` | `!dwu` | `_DWUDATA` | **Shipped** (#53–#54) |
 | Market | `!market`, `!dwa` | `!dwa` | `_DWADATA` | Stub observe |
-| Merc | `!merc`, `!dwm` | `!dwm` | `_DWMDATA` | Stub observe |
+| Merc | `!merc`, `!dwm` | `!dwm` | `_DWMDATA` | **Shipped** (#55) |
 | Quests | `/tracker`, `!dwt sync` | `!dwt` | `_DWTDATA` | Tracker parser shipped (#50) |
 | Drift | `!drift`, shops, contracts | `!dwn` / `!dwo` | `_DWNDATA` / `_DWODATA` | Drift UI shipped (#51–#52) |
 | Fish | `!fish`, `!fish next`, … | `!dwf` | `_DWFDATA` | Fish UI shipped (#47); machine parse stub |
@@ -105,7 +105,19 @@ m|Journal refreshed.
 z
 ```
 
-**Merc board (`!merc board` / `!dwm`):**
+**Merc board (`!merc board [job] [page]` / `!dwm board`):**
+
+```
+d|1|board
+n|1|2|10|5|2
+r|m101|Alice|WAR|75|5000
+r|m102|Bob|WHM|60|4500
+z
+```
+
+Fixture: `spec/fixtures/merc_board.lines`
+
+**Merc board (`!merc board` / `!dwm`) — summary placeholder:**
 
 ```
 d|1|board

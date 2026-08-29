@@ -59,11 +59,4 @@ function M.market(ctx)
     })(ctx);
 end
 
-function M.merc(ctx)
-    return stub_screen('merc', 'Merc', {
-        { id = 'board', label = 'Board', desc = 'Who is for hire (!merc board).', cmd = cmds.merc_board() },
-        { id = 'hire', label = 'Hire…', desc = 'Quote and hire — #55.', dim = true },
-    })(ctx);
-end
-
 return M;

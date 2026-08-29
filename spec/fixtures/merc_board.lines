@@ -1,0 +1,8 @@
+# sender: _DWMDATA
+# verb: board
+# Redacted sample — page 1, two merc listings.
+d|1|board
+n|1|2|10|5|2
+r|m101|Alice|WAR|75|5000
+r|m102|Bob|WHM|60|4500
+z|

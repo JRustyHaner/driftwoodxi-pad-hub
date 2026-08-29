@@ -19,6 +19,8 @@ describe('cmds expansion stubs', function()
 
     it('builds merc and tracker commands', function()
         assert.equals('!merc board', cmds.merc_board());
+        assert.equals('!merc board WAR 2', cmds.merc_board('WAR', 2));
+        assert.equals('!merc hire m101', cmds.merc_hire('m101'));
         assert.equals('!dwt sync', cmds.tracker_sync());
     end);
 
