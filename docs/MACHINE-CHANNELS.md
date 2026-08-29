@@ -57,7 +57,7 @@ z
 | Fish | `!fish`, `!dwf` | `!dwf` | `_DWFDATA` | Stub observe |
 | Raid | `!raid` | *(chat)* / `!dwr`? | *(TBD)* | Chat-only today |
 | Arena | `!arena` | *(chat)* | *(none)* | Chat-only today |
-| Scan | `!scan` | *(chat)* / `!dwx`? | `_DWXDATA` | Chat-only today |
+| Scan | `!scan`, `!scan 0 N` | *(chat)* / `!dwx`? | `_DWXDATA` | Scan UI shipped (#46); chat-only |
 | Engage | `!trustengage`, `/dwengage on\|off` | `!dwe`? | `_DWEDATA` | Engage UI shipped (#45); machine parse stub |
 | Report | `!dwreport` | `!dwr` | `_DWRDATA` | Not in hub UI |
 

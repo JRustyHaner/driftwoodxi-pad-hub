@@ -111,11 +111,4 @@ function M.arena(ctx)
     })(ctx);
 end
 
-function M.scan(ctx)
-    return stub_screen('scan', 'Scan', {
-        { id = 'scan', label = 'Scan target', desc = 'Target info and drops (!scan).', cmd = cmds.scan_target() },
-        { id = 'scan_th', label = 'Scan (TH8)', desc = 'Drop rates at Treasure Hunter 8.', cmd = cmds.scan_target(8) },
-    })(ctx);
-end
-
 return M;
