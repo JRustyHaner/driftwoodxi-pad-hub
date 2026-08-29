@@ -48,4 +48,16 @@ Closing restores both. If your Ashita build ignores an API, say so in acceptance
 
 Full checklist: [ACCEPTANCE.md](./ACCEPTANCE.md).
 
-Full checklist: [ACCEPTANCE.md](./ACCEPTANCE.md).
+## Parse fixtures (CI)
+
+`_DW*DATA` and chat-scraper parsers are covered by committed lines in `spec/fixtures/`. CI runs them on every PR via `busted`.
+
+**Capture from live Driftwood (Desktop or Deck):**
+
+1. Trigger the verb in game (e.g. Items → Who, or `/dwhub` → Jobs).
+2. Log machine lines from `data.handle_machine` during dev, or copy from an official dw\* addon’s parse debug if available.
+3. Redact real character names → placeholders (`Alice`, `Bob`).
+4. Update the matching `spec/fixtures/<name>.lines` file; run `busted spec/data_spec.lua`.
+5. Commit fixture + any parser fix in the same PR.
+
+Details: [spec/README.md](../spec/README.md).

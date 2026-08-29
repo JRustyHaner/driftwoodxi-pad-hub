@@ -77,7 +77,7 @@ Follow these when adding or changing hub features. They complement the [product 
 ### Testing
 
 - **`luacheck` + `busted`** required before opening a PR (`ci` workflow).
-- **Parse fixtures** under `spec/fixtures/` for each new `_DW*DATA` verb or record shape you parse.
+- **Parse fixtures** under `spec/fixtures/` for each new `_DW*DATA` verb or record shape you parse. Refresh procedure: [spec/README.md](./spec/README.md) and [docs/DECK.md](./docs/DECK.md).
 - **In-game sync** — after merge, `./scripts/sync-to-ashita.sh` (or `DRIFTWOOD_ASHITA=…`) and `/addon reload dwhub`; note Desktop vs Deck in the PR when input or layout changes ([docs/ACCEPTANCE.md](./docs/ACCEPTANCE.md)).
 
 ### Versioning and docs
