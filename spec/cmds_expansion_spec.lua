@@ -7,6 +7,12 @@ describe('cmds expansion stubs', function()
         assert.equals('!warehouse', cmds.warehouse_summary());
         assert.equals('!warehouse page 2', cmds.warehouse_page(2));
         assert.equals('!warehouse take 5 Bob', cmds.warehouse_take(5, 'Bob'));
+        assert.equals('!warehouse put me 0 3 1', cmds.warehouse_put('me', 0, 3, 1));
+        assert.equals('!warehouse stashall', cmds.warehouse_stashall());
+        assert.equals('!warehouse pull:4096', cmds.warehouse_pull('4096'));
+        assert.equals('!warehouse pin 12', cmds.warehouse_pin(12));
+        assert.equals('!warehouse unpin 12', cmds.warehouse_unpin(12));
+        assert.equals('!warehouse buy confirm', cmds.warehouse_buy_confirm());
         assert.equals('!dwu page 1', cmds.dwu_page(1));
         assert.equals('!market', cmds.market_summary());
     end);

@@ -378,4 +378,14 @@ function M.items(ctx)
         end,
     };
 end
+
+--- Pick a character, browse bags, and invoke on_pick(entry, nav, owner_name).
+function M.browse_bags_pick(ctx, on_pick)
+    return pick_character(ctx, 'Whose bags', { me = true }, function(owner, nav)
+        nav:push(browse_bags_screen(ctx, owner, function(entry, nav2, owner_name)
+            on_pick(entry, nav2, owner_name or owner);
+        end));
+    end);
+end
+
 return M;
