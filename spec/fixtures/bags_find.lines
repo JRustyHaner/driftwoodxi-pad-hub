@@ -1,0 +1,6 @@
+# sender: _DWDATA
+# verb: find
+# One hit in inventory (loc 0); itemid 4096 → Fire Crystal via spec stub.
+d|1|find
+f|10|0|3:4096:12:0
+z|

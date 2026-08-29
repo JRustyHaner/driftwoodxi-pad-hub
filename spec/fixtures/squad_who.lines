@@ -1,0 +1,7 @@
+# sender: _DWSDATA
+# verb: who
+# Redacted sample — two account characters, one in squad slot 1.
+d|1|who
+c|10|Alice|1|99|0|0|5|0|0|0|1
+c|11|Bob|5|50|1|20|1|0|0|0|0
+z|

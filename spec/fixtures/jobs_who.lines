@@ -1,0 +1,7 @@
+# sender: _DWJDATA
+# verb: who
+# unlocked=2 → WAR only; level string padded to 22 jobs.
+d|1|who
+c|10|Alice|1|99|0|0|5|0|2|0
+j|10|1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+z|

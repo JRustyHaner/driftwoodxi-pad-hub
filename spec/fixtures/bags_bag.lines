@@ -1,0 +1,7 @@
+# sender: _DWDATA
+# verb: bag
+# Requires bag_charid=10 before apply (see data_spec before_each).
+d|1|bag
+n|10|0|2|30
+i|10|0|1:4096:5:0
+z|
