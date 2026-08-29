@@ -16,6 +16,9 @@ describe('cmds expansion stubs', function()
     it('builds drift, fish, raid, and arena boards', function()
         assert.equals('!drift', cmds.drift_board());
         assert.equals('!fish', cmds.fish_status());
+        assert.equals('!fish next', cmds.fish_next());
+        assert.equals('!fish rank', cmds.fish_rank());
+        assert.equals('!fish route', cmds.fish_route());
         assert.equals('!raid', cmds.raid_board());
         assert.equals('!arena', cmds.arena_board());
     end);

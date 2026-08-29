@@ -254,6 +254,18 @@ function M.fish_status()
     return '!fish';
 end
 
+function M.fish_next()
+    return '!fish next';
+end
+
+function M.fish_rank()
+    return '!fish rank';
+end
+
+function M.fish_route()
+    return '!fish route';
+end
+
 function M.raid_board()
     return '!raid';
 end

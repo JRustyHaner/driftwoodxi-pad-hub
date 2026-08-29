@@ -54,7 +54,7 @@ z
 | Merc | `!merc`, `!dwm` | `!dwm` | `_DWMDATA` | Stub observe |
 | Quests | `/tracker`, `!dwt` | `!dwt` | `_DWTDATA` | Stub observe |
 | Drift | `!drift`, `!dwn` / `!dwo` | `!dwn` / `!dwo` | `_DWNDATA` / `_DWODATA` | Stub observe (TBD) |
-| Fish | `!fish`, `!dwf` | `!dwf` | `_DWFDATA` | Stub observe |
+| Fish | `!fish`, `!fish next`, … | `!dwf` | `_DWFDATA` | Fish UI shipped (#47); machine parse stub |
 | Raid | `!raid` | *(chat)* / `!dwr`? | *(TBD)* | Chat-only today |
 | Arena | `!arena` | *(chat)* | *(none)* | Chat-only today |
 | Scan | `!scan`, `!scan 0 N` | *(chat)* / `!dwx`? | `_DWXDATA` | Scan UI shipped (#46); chat-only |

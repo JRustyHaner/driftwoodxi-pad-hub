@@ -54,7 +54,7 @@ Journal, contracts, and skilling.
 |--------|--------|-------|
 | Quests | Planned (#50) | `/tracker` / dwtracker |
 | Drift | Planned (#51–#52) | Drift Board / dwquest |
-| Fish | Planned (#47) | `!fish` / dwfishing |
+| Fish | Shipped (#47) | `!fish`, `!fish next`, `!fish rank`, `!fish route` |
 | Craft | Future | `!craft` / dwcraft — full UI out of scope until requested |
 
 ---
