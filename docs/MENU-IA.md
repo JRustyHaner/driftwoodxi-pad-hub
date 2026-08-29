@@ -76,7 +76,7 @@ Target info and client engage helpers.
 
 | Screen | Status | Notes |
 |--------|--------|-------|
-| Scan | Planned (#46) | `!scan` / dwscan |
+| Scan | Shipped (#46) | `!scan`, `!scan 0 N` |
 | Engage | Shipped (#45) | `/dwengage on\|off`, `!trustengage` |
 
 ---
