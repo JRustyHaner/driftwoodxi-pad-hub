@@ -49,7 +49,7 @@ z
 | Items / bags | `!dwq`, `!squad find` | `!dwq` | `_DWDATA` | **Shipped** |
 | Jobs | `!jobs`, `!dwj` | `!dwj` | `_DWJDATA` | **Shipped** |
 | Rules | `!squad rules`, `!dwg` | `!dwg` | `_DWGDATA` | **Shipped** |
-| Storage | `!warehouse`, `!dwu` | `!dwu` | `_DWUDATA` | Stub observe |
+| Storage | `!warehouse`, `!dwu` | `!dwu` | `_DWUDATA` | **Shipped** (#53 browse/take) |
 | Market | `!market`, `!dwa` | `!dwa` | `_DWADATA` | Stub observe |
 | Merc | `!merc`, `!dwm` | `!dwm` | `_DWMDATA` | Stub observe |
 | Quests | `/tracker`, `!dwt sync` | `!dwt` | `_DWTDATA` | Tracker parser shipped (#50) |
@@ -77,6 +77,17 @@ z
 6. Add a `data_spec.lua` example once the fixture is stable.
 
 ### Placeholder samples (unverified — replace after capture)
+
+**Warehouse page (`!warehouse page N` / `!dwu page N`):**
+
+```
+d|1|page
+n|2|2|12|1000|50|20
+i|2|51:4096:5:0,52:16512:1:0
+z
+```
+
+Fixture: `spec/fixtures/warehouse_page.lines`
 
 **Warehouse summary (`!warehouse` / `!dwu`):**
 

@@ -80,6 +80,16 @@ local function new_state()
         tracker_active_quests = {},
         tracker_active_missions = {},
         tracker_synced = false,
+        -- Warehouse (_DWUDATA / #53)
+        warehouse = {
+            page = 1,
+            total_pages = 1,
+            used = 0,
+            capacity = 0,
+            page_size = 50,
+            items = {},
+        },
+        warehouse_expecting_page = nil,
     };
 end
 
@@ -475,6 +485,93 @@ local function handle_tracker(line)
     end
 end
 
+--- Packed shelf payload: `<slot>:<itemid>:<qty>:<flags>,...`
+local function parse_warehouse_packed(packed, into)
+    for _, entry in ipairs(split(packed or '', ',')) do
+        local bits = split(entry, ':');
+        if (#bits >= 4) then
+            local itemid = tonumber(bits[2]) or 0;
+            if (itemid > 0) then
+                into[#into + 1] = {
+                    slot = tonumber(bits[1]) or 0,
+                    itemid = itemid,
+                    qty = tonumber(bits[3]) or 0,
+                    flags = tonumber(bits[4]) or 0,
+                    name = resolve_item_name(itemid),
+                };
+            end
+        end
+    end
+end
+
+local function handle_warehouse(line)
+    local parts = split(line, '|');
+    local kind = parts[1];
+    local inbound = channel_inbound('warehouse');
+    local wh = state.warehouse;
+
+    if (kind == 'd') then
+        local version = tonumber(parts[2]) or 0;
+        if (version ~= PROTOCOL) then
+            state.status = string.format('Protocol %d (expected %d) on warehouse', version, PROTOCOL);
+            inbound.verb = nil;
+            return;
+        end
+        inbound.verb = parts[3];
+        if (inbound.verb == 'page') then
+            wh.items = {};
+        end
+        return;
+    end
+
+    if (kind == 'm' or kind == 'e') then
+        state.status = line:sub(3);
+        return;
+    end
+
+    if (inbound.verb == nil) then
+        return;
+    end
+
+    if (kind == 'z') then
+        if (inbound.verb == 'page') then
+            table.sort(wh.items, function(a, b)
+                return (a.slot or 0) < (b.slot or 0);
+            end);
+            state.warehouse_expecting_page = nil;
+        end
+        inbound.verb = nil;
+        return;
+    end
+
+    if (inbound.verb == 'summary' and kind == 's') then
+        wh.used = tonumber(parts[2]) or wh.used;
+        wh.capacity = tonumber(parts[3]) or wh.capacity;
+        return;
+    end
+
+    if (inbound.verb == 'page') then
+        local page = tonumber(parts[2]) or 0;
+        if (kind == 'n') then
+            wh.page = page;
+            wh.used = tonumber(parts[4]) or wh.used;
+            wh.capacity = tonumber(parts[5]) or wh.capacity;
+            wh.page_size = tonumber(parts[6]) or wh.page_size;
+            wh.total_pages = tonumber(parts[7]) or wh.total_pages;
+            if (wh.total_pages < 1) then
+                wh.total_pages = 1;
+            end
+            return;
+        end
+        if (kind == 'i') then
+            if (state.warehouse_expecting_page == nil or page == state.warehouse_expecting_page) then
+                parse_warehouse_packed(parts[3], wh.items);
+            end
+            return;
+        end
+    end
+end
+
 --- Observe-only handler for expansion senders (buffer until child issues add parsers).
 local function handle_stub_envelope(channel, line)
     local parts = split(line, '|');
@@ -525,6 +622,8 @@ function M.handle_machine(sender, message)
         handle_squad_or_bags_or_jobs(channel, message);
     elseif (channel == 'tracker') then
         handle_tracker(message);
+    elseif (channel == 'warehouse') then
+        handle_warehouse(message);
     else
         handle_stub_envelope(channel, message);
     end
@@ -927,6 +1026,32 @@ end
 
 function M.request_rule_presets(enqueue)
     dispatch_send(enqueue, '!dwg presets');
+end
+
+function M.warehouse_items()
+    return state.warehouse.items;
+end
+
+function M.warehouse_info()
+    local wh = state.warehouse;
+    return {
+        page = wh.page,
+        total_pages = wh.total_pages,
+        used = wh.used,
+        capacity = wh.capacity,
+        page_size = wh.page_size,
+    };
+end
+
+function M.request_warehouse_page(enqueue, page)
+    page = tonumber(page) or 1;
+    if (page < 1) then
+        page = 1;
+    end
+    state.warehouse_expecting_page = page;
+    state.warehouse.page = page;
+    state.warehouse.items = {};
+    dispatch_send(enqueue, string.format('!dwu page %d', page));
 end
 
 --- Retry roster fetch while a pick screen is waiting (hub open loop).

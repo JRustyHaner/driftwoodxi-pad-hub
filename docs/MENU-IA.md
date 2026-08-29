@@ -40,7 +40,7 @@ Account bags, gear, and economy.
 | Screen | Status | Notes |
 |--------|--------|-------|
 | Items | Shipped | Find, send, fetch, equip, box, gear, optimize |
-| Storage | Planned (#53–#54) | `!warehouse` / dwwarehouse |
+| Storage | Shipped (#53) | `!warehouse` summary, browse/take; put/stash #54 |
 | Market | Planned (#56–#57) | `!market` / dwah |
 | Merc | Planned (#55) | `!merc` / dwmerc |
 

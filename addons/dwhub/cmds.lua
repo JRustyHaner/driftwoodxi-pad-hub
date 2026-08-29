@@ -234,6 +234,18 @@ function M.warehouse_summary()
     return '!warehouse';
 end
 
+function M.warehouse_page(page)
+    return string.format('!warehouse page %d', tonumber(page) or 1);
+end
+
+function M.warehouse_take(slot, char)
+    return string.format('!warehouse take %d %s', tonumber(slot) or 0, char or '');
+end
+
+function M.dwu_page(page)
+    return string.format('!dwu page %d', tonumber(page) or 1);
+end
+
 function M.market_summary()
     return '!market';
 end
