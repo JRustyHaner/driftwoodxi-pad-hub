@@ -12,16 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: leafo/gh-actions-lua@v10
-        with:
-          luaVersion: "luajit-2.1"
-
-      - uses: leafo/gh-actions-luarocks@v4
-
-      - name: Install tools
+      - name: Install Lua tools
         run: |
-          luarocks install luacheck
-          luarocks install busted
+          sudo apt-get update
+          sudo apt-get install -y luajit libluajit-5.1-dev luarocks
+          sudo luarocks install luacheck
+          sudo luarocks install busted
 
       - name: Luacheck
         run: luacheck addons/dwhub spec

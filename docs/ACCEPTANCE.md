@@ -5,33 +5,33 @@ Manual verification (CI cannot boot FFXI). Run on Steam Deck Game Mode or Deskto
 ## Setup
 
 - [ ] `dwhub` loads (`/addon load dwhub`)
-- [ ] Macro or bind toggles `/dwhub` without stealing Select/OSK
+- [ ] Macro or bind toggles `/dwhub` without stealing Select/OSK (Deck: **L4** → F9)
 - [ ] Window readable at **1280×720**
 
 ## Navigation
 
 - [ ] D-pad / arrows move focus; yellow selection + description panel update
 - [ ] A / Enter confirms; B / Esc backs; B on Home closes
-- [ ] While open, character does not move / stock menu does not eat A/B (best-effort)
-- [ ] Closing restores normal pad control
+- [ ] While open, character does not move / stock menu does not eat A/B / arrows / Enter / Esc (gamepad + keyboard block)
+- [ ] Closing restores normal pad and keyboard control
 
 ## Squad
 
 - [ ] Call / Dismiss enqueue and reach chat as `!squad …`
-- [ ] Set slot → name (top field + OSK) works
+- [ ] Roster shows slots 1–5 (read-only) with Refresh
+- [ ] Set slot → character pick works
+- [ ] Cast… queues `!{tag} {spell} [target]`
 - [ ] Behavior submenu applies a profile
 
 ## Jobs
 
-- [ ] Change jobs shows full job list (WAR … RUN)
+- [ ] Change jobs greys locked jobs for the selected character
 - [ ] Main + sub (or none) queues `!jobs set …`
-- [ ] Use / save / delete preset via top text field
 
 ## Items
 
-- [ ] Find search field is at the **top** (visible with OSK up)
-- [ ] Send / Fetch / Equip enqueue correct `!squad` lines
-- [ ] Optimize me queues `!optimizegear`
+- [ ] Send / Fetch prompt for quantity (1 / 5 / 10 / 99 / custom)
+- [ ] Optimize → Apply or Preview only
 
 ## Rules
 
@@ -41,7 +41,7 @@ Manual verification (CI cannot boot FFXI). Run on Steam Deck Game Mode or Deskto
 ## Port
 
 - [ ] Home nation queues `!port home`
-- [ ] HP/SG/OP/SP list + Go use top destination field
+- [ ] HP/SG/OP/SP list + Go; locked rows cannot Go
 - [ ] Search queues `!port <name>`
 
 ## Blockers

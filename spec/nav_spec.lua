@@ -46,4 +46,22 @@ describe('nav', function()
         assert.is_false(n:pop());
         assert.equals(1, n:depth());
     end);
+
+    it('pages long lists with left/right', function()
+        local labels = {};
+        for i = 1, 20 do
+            labels[i] = tostring(i);
+        end
+        local n = nav.new();
+        n:set_page_size(8);
+        n:push(screen(labels));
+        assert.equals(1, n:list_page());
+        assert.equals(1, n:focus);
+        n:move_page(1);
+        assert.equals(2, n:list_page());
+        assert.equals(9, n:focus);
+        local start_i, stop_i = n:page_row_range();
+        assert.equals(9, start_i);
+        assert.equals(16, stop_i);
+    end);
 end);

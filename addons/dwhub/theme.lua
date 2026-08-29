@@ -5,9 +5,11 @@
 * navy glass windows, etched borders, yellow selection, white focus text.
 *
 * push() / pop() wrap Begin/End so the style stack stays balanced.
+* Font and spacing scale with game display size (1280×720 baseline).
 --]]
 
 local imgui = require('imgui');
+local scale_mod = require('scale');
 
 local M = {};
 
@@ -31,11 +33,51 @@ M.colors = {
     buttonActive = rgba(60, 60, 160, 1.0),
 };
 
+local current_scale = 1.0;
+
+local function display_size()
+    local ok, io = pcall(function()
+        return imgui.GetIO();
+    end);
+    if (not ok or io == nil or io.DisplaySize == nil) then
+        return scale_mod.BASE_W, scale_mod.BASE_H;
+    end
+    local ds = io.DisplaySize;
+    local w = scale_mod.BASE_W;
+    local h = scale_mod.BASE_H;
+    local dst = type(ds);
+    -- Ashita sugar extends numbers with __index -> math; never use .x/.y on a bare number.
+    if (dst == 'table' or dst == 'userdata') then
+        w = ds[1] or ds.x or w;
+        h = ds[2] or ds.y or h;
+    end
+    return w, h;
+end
+
+--- Refresh scale from the current game framebuffer (call each frame while open).
+function M.update()
+    local w, h = display_size();
+    current_scale = scale_mod.from_display(w, h);
+end
+
+function M.scale()
+    return current_scale;
+end
+
+function M.window_size()
+    return scale_mod.window_size(current_scale);
+end
+
+function M.window_pos()
+    return scale_mod.window_pos(current_scale);
+end
+
 --- Push ImGui style for an FFXI-ish window. Returns count of colors + vars pushed.
 function M.push()
     local c = M.colors;
     local nCol = 0;
     local nVar = 0;
+    local s = current_scale;
 
     imgui.PushStyleColor(ImGuiCol_WindowBg, c.windowBg); nCol = nCol + 1;
     imgui.PushStyleColor(ImGuiCol_Border, c.border); nCol = nCol + 1;
@@ -55,8 +97,8 @@ function M.push()
     imgui.PushStyleVar(ImGuiStyleVar_WindowRounding, 0); nVar = nVar + 1;
     imgui.PushStyleVar(ImGuiStyleVar_FrameRounding, 0); nVar = nVar + 1;
     imgui.PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1); nVar = nVar + 1;
-    imgui.PushStyleVar(ImGuiStyleVar_WindowPadding, { 10, 10 }); nVar = nVar + 1;
-    imgui.PushStyleVar(ImGuiStyleVar_ItemSpacing, { 4, 4 }); nVar = nVar + 1;
+    imgui.PushStyleVar(ImGuiStyleVar_WindowPadding, scale_mod.padding(s)); nVar = nVar + 1;
+    imgui.PushStyleVar(ImGuiStyleVar_ItemSpacing, scale_mod.item_spacing(s)); nVar = nVar + 1;
 
     return { colors = nCol, vars = nVar };
 end
@@ -70,6 +112,31 @@ function M.pop(token)
     end
     if (token.colors and token.colors > 0) then
         imgui.PopStyleColor(token.colors);
+    end
+end
+
+--- Scale text inside an open window. Returns true when PushFont was used.
+function M.push_font()
+    local s = current_scale;
+    if (s == 1.0) then
+        return false;
+    end
+    if (imgui.SetWindowFontScale ~= nil) then
+        imgui.SetWindowFontScale(s);
+        return false;
+    end
+    if (imgui.PushFont ~= nil and imgui.GetFont ~= nil and imgui.GetFontSize ~= nil) then
+        imgui.PushFont(imgui.GetFont(), imgui.GetFontSize() * s);
+        return true;
+    end
+    return false;
+end
+
+function M.pop_font(pushed)
+    if (pushed) then
+        imgui.PopFont();
+    elseif (imgui.SetWindowFontScale ~= nil) then
+        imgui.SetWindowFontScale(1.0);
     end
 end
 

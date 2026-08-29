@@ -30,9 +30,14 @@ Keep **Select** on the Steam OSK. Put `/dwhub` on a macro book slot or Steam Inp
 
 Any hub screen with a text field draws it at the **top** of the window so the Deck on-screen keyboard does not cover it. Prefer D-pad flows (job list, behavior, slots) when you can avoid typing.
 
-## Pad capture
+## Pad / keyboard capture
 
-While the hub is open, dwhub best-effort disables FFXI’s gamepad so A/B/D-pad drive the hub. Closing restores control. If your Ashita build ignores that API, map D-pad → arrows for hub use (see BINDS.md).
+While the hub is open, dwhub best-effort:
+
+- Disables FFXI’s gamepad (`SetDisableGamepad`) so A/B/D-pad drive the hub
+- Blocks FFXI’s keyboard (`SetBlockInput`) so arrows / Enter / Esc do not open menus or move the character
+
+Closing restores both. If your Ashita build ignores an API, say so in acceptance notes.
 
 ## Quick smoke
 

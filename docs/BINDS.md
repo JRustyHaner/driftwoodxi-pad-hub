@@ -4,32 +4,45 @@ The hub toggles with `/dwhub` (alias `/hub`). Keep **Select** on Steam Deck’s 
 
 ## Recommended setup
 
-1. Pick a free FFXI macro book slot (or a Steam Input button that presses a keyboard key).
-2. Macro line example:
+1. **Deck:** Steam **DriftwoodXI** uses the Neptune **Gamepad** layout (installer ships it). **Left back paddle (L4)** sends **F9** → Pad Hub.
+2. Ashita bind (in `driftwood-default.txt` after `/addon load dwhub`):
+
+```
+/bind F9 /dwhub
+```
+
+3. **Select** stays on Steam OSK (not remapped).
+
+Optional macro line (same effect if you prefer in-game macro book):
 
 ```
 /dwhub
 ```
 
-3. Optional Ashita keyboard bind (Desktop / when a key is free):
+Optional Ashita keyboard bind (Desktop / when a key is free):
 
 ```
 /bind !insert /dwhub
 ```
 
-(`!insert` = Alt+Insert — choose whatever does not fight Setup E.)
-
 ## Steam Input
 
-- Controller template: **Gamepad** (already typical for Driftwood on Deck).
-- Map one unused button (e.g. **L4** / **R4** / long-press **Y**) to a keyboard key that your macro or `/bind` fires.
-- Do **not** steal Select if you want OSK for search fields at the top of hub windows.
+- Controller template: **DriftwoodXI Gamepad** (Neptune passthrough to FFXI Alternate Setup E).
+- **L4** (left back paddle) → **F9** → `/dwhub` (via Ashita bind above).
+- Do **not** steal Select — keep it on Steam OSK for search fields.
 
 ## While the hub is open
 
-`dwhub` best-effort disables FFXI gamepad consumption (`SetDisableGamepad`) so A/B/D-pad do not move the character. Closing `/dwhub` restores the previous setting.
+`dwhub` best-effort:
 
-If pad input still leaks on your build, drive the hub with **arrow keys / Enter / Esc** (Steam Input can mirror D-pad → arrows for the hub chord only).
+- Disables FFXI **gamepad** consumption (`SetDisableGamepad`) so A/B/D-pad do not move the character
+- Blocks FFXI **keyboard** consumption (`IKeyboard:SetBlockInput`) so arrows / Enter / Esc drive the hub instead of menus or movement
+
+Closing `/dwhub` restores both previous settings. ImGui still receives those keys for hub nav and top search fields.
+
+**Xbox / XInput:** Hub navigation reads Ashita’s `xinput_state` event (D-pad, A, B). ImGui gamepad keys alone are not enough on desktop. FFXI Setup E with XInput enabled is required.
+
+If input still leaks on your build, say so in an issue (Ashita build + Desktop vs Deck).
 
 ## OSK and search
 
