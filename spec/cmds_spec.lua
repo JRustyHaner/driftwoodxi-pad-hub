@@ -21,6 +21,11 @@ describe('cmds', function()
         assert.equals('!squad equip Yakapo main auto', cmds.squad_equip('Yakapo', 'main', 'auto'));
     end);
 
+    it('builds squad send/fetch by item id', function()
+        assert.equals('!squad send Bob 4096 5', cmds.squad_send('Bob', 4096, 5));
+        assert.equals('!squad fetch Alice 16512 1', cmds.squad_fetch('Alice', 16512, 1));
+    end);
+
     it('builds job cast commands', function()
         assert.equals('!whm cure3 me', cmds.job_cast('whm', 'cure3', 'me'));
         assert.equals('!blm stone', cmds.job_cast('blm', 'stone', nil));

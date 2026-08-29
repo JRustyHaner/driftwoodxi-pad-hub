@@ -9,7 +9,7 @@
 
 addon.name    = 'dwhub';
 addon.author  = 'DriftwoodXI Pad Hub';
-addon.version = '0.3.0';
+addon.version = '0.3.1';
 addon.desc    = 'Pad-first DriftwoodXI hub (squad, jobs, items, rules, port).';
 addon.link    = 'https://github.com/JRustyHaner/driftwoodxi-pad-hub';
 
@@ -131,6 +131,9 @@ local function sync_screen_focus()
     if (sid ~= state.last_screen_id) then
         state.last_screen_id = sid;
         clear_search_focus();
+        if (imgui.SetKeyboardFocusHere ~= nil) then
+            imgui.SetKeyboardFocusHere(-1);
+        end
     end
 end
 
@@ -157,7 +160,8 @@ local function handle_input()
     local has_search = (cur ~= nil and cur.search ~= nil);
 
     -- Filter field active: B returns to list; do not move rows.
-    if (imgui.IsAnyItemActive ~= nil and imgui.IsAnyItemActive()) then
+    -- Only block list navigation when this screen owns the search field.
+    if (has_search and imgui.IsAnyItemActive ~= nil and imgui.IsAnyItemActive()) then
         if (key_pressed(ImGuiKey_Escape) or key_pressed(ImGuiKey_GamepadFaceRight) or pad.pressed(pad.BTN.B)) then
             clear_search_focus();
             return;
@@ -240,7 +244,15 @@ local function text_line_height()
     return scale_mod.list_line_height(theme.scale());
 end
 
-local function content_avail_y()
+local function window_content_height()
+    if (imgui.GetWindowContentRegionMax ~= nil and imgui.GetWindowContentRegionMin ~= nil) then
+        local cmax = imgui.GetWindowContentRegionMax();
+        local cmin = imgui.GetWindowContentRegionMin();
+        local h = vec_y(cmax, 0) - vec_y(cmin, 0);
+        if (h > 0) then
+            return h;
+        end
+    end
     if (imgui.GetContentRegionAvail ~= nil) then
         local y = vec_y(imgui.GetContentRegionAvail(), 0);
         if (y > 0) then
@@ -248,10 +260,34 @@ local function content_avail_y()
         end
     end
     local ws = theme.window_size();
-    return math.floor((ws[2] or scale_mod.WINDOW_H) * 0.42);
+    local pad = scale_mod.padding(theme.scale());
+    return math.max(0, (ws[2] or scale_mod.WINDOW_H) - (pad[2] or 10) * 2);
 end
 
+local function compute_list_layout(cur)
+    local lh = text_line_height();
+    local scale = theme.scale();
+    local has_filter = (cur ~= nil and cur.search ~= nil);
+    local has_status = (nav.status ~= nil and nav.status ~= '');
+    local chrome_top = layout.chrome_above(lh, scale, {
+        has_filter = has_filter,
+        desc_lines = DESC_LINES,
+        has_status = has_status,
+    });
+    local chrome_bottom = layout.footer_height(lh, {
+        footer_lines = 1,
+        page_indicator = true,
+        separators = 1,
+        extra_chrome = math.floor(4 * scale + 0.5),
+    });
+    local content_h = window_content_height();
+    return layout.split_content_budget(content_h, lh, chrome_top, chrome_bottom);
+end
+
+local child_panel_open = false;
+
 local function begin_panel(id, height, border)
+    child_panel_open = false;
     border = (border == nil) and true or border;
     if (imgui.BeginChild == nil) then
         return false;
@@ -260,30 +296,40 @@ local function begin_panel(id, height, border)
     if (ImGuiWindowFlags_NoScrollWithMouse ~= nil) then
         flags = bit.bor(flags, ImGuiWindowFlags_NoScrollWithMouse);
     end
+    local began = false;
+    local visible = false;
     local ok = pcall(function()
-        imgui.BeginChild(id, { -1, height }, border, flags);
+        visible = imgui.BeginChild(id, { -1, height }, border, flags);
+        began = true;
     end);
     if (not ok) then
         ok = pcall(function()
-            imgui.BeginChild(id, -1, height, border, flags);
+            visible = imgui.BeginChild(id, -1, height, border, flags);
+            began = true;
         end);
     end
-    return ok;
+    if (began and visible) then
+        child_panel_open = true;
+        return true;
+    end
+    if (began and imgui.EndChild ~= nil) then
+        imgui.EndChild();
+    end
+    return false;
 end
 
 local function end_panel()
-    if (imgui.EndChild ~= nil) then
+    if (child_panel_open and imgui.EndChild ~= nil) then
         imgui.EndChild();
+        child_panel_open = false;
     end
 end
 
-local function draw_filter(cur)
+local function draw_filter(cur, filter_h)
     if (cur == nil or cur.search == nil) then
         return;
     end
-    local lh = text_line_height();
-    local filter_h = lh * 3 + math.floor(4 * theme.scale() + 0.5);
-    begin_panel('##dwhub_filter', filter_h, false);
+    if (begin_panel('##dwhub_filter', filter_h, false)) then
     local filter_active = (imgui.IsAnyItemActive ~= nil and imgui.IsAnyItemActive());
     local filter_focused = state.search_focus or filter_active;
     local default_label = (cur.search_required and (cur.search_label or 'Text'))
@@ -300,24 +346,23 @@ local function draw_filter(cur)
         imgui.TextColored(theme.colors.textDim, 'Down: list   B: back to list');
     end
     end_panel();
-    imgui.Separator();
+    end
 end
 
-local function draw_description()
+local function draw_description(desc_h)
     local title = 'Category Selection';
     local cur = nav:current();
     if (cur ~= nil and cur.title ~= nil) then
         title = cur.title;
     end
-    local lh = text_line_height();
-    local desc_h = lh * DESC_LINES + math.floor(4 * theme.scale() + 0.5);
-    begin_panel('##dwhub_desc', desc_h, false);
-    imgui.TextColored(theme.colors.title, title);
-    imgui.TextWrapped(nav:description());
-    if (nav.status ~= nil and nav.status ~= '') then
-        imgui.TextColored(theme.colors.textDim, nav.status);
+    if (begin_panel('##dwhub_desc', desc_h, false)) then
+        imgui.TextColored(theme.colors.title, title);
+        imgui.TextWrapped(nav:description());
+        if (nav.status ~= nil and nav.status ~= '') then
+            imgui.TextColored(theme.colors.textDim, nav.status);
+        end
+        end_panel();
     end
-    end_panel();
 end
 
 local function draw_list_rows(start_i, stop_i, rows)
@@ -353,15 +398,18 @@ local function draw_list(list_h)
         draw_list_rows(start_i, stop_i, rows);
         end_panel();
     else
-        local pos = imgui.GetCursorScreenPos and imgui.GetCursorScreenPos() or { x = 0, y = 0 };
+        local pos_x, pos_y = 0, 0;
+        if (imgui.GetCursorScreenPos ~= nil) then
+            pos_x, pos_y = imgui.GetCursorScreenPos();
+        end
         local w = theme.window_size()[1] or scale_mod.WINDOW_W;
         if (imgui.GetContentRegionAvail ~= nil) then
             w = vec_x(imgui.GetContentRegionAvail(), w);
         end
         if (imgui.PushClipRect ~= nil) then
             imgui.PushClipRect(
-                { pos.x, pos.y },
-                { pos.x + w, pos.y + list_h },
+                { pos_x, pos_y },
+                { pos_x + w, pos_y + list_h },
                 true
             );
         end
@@ -392,22 +440,29 @@ local function draw_window()
     if (visible) then
         local font_pushed = theme.push_font();
         local cur = nav:current();
-
-        draw_filter(cur);
-        draw_description();
-        imgui.Separator();
-
         local lh = text_line_height();
-        local avail = content_avail_y();
-        local list_h, page_size = layout.split_list_budget(avail, lh, {
-            footer_lines = 1,
-            page_indicator = true,
-            extra_chrome = math.floor(8 * theme.scale() + 0.5),
-        });
+        local scale = theme.scale();
+        local has_filter = (cur ~= nil and cur.search ~= nil);
+        local has_status = (nav.status ~= nil and nav.status ~= '');
+
+        local list_h, page_size = compute_list_layout(cur);
         nav:set_page_size(page_size);
         nav:ensure_focus_visible();
 
         handle_input();
+
+        local filter_h = layout.filter_height(lh, scale);
+        local desc_h = layout.desc_height(lh, scale, {
+            desc_lines = DESC_LINES,
+            has_status = has_status,
+        });
+
+        draw_filter(cur, filter_h);
+        if (has_filter) then
+            imgui.Separator();
+        end
+        draw_description(desc_h);
+        imgui.Separator();
 
         local rows = (cur ~= nil and cur.rows ~= nil) and cur:rows() or {};
         local show_page = draw_list(list_h);

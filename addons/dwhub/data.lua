@@ -571,7 +571,7 @@ function M.job_unlocked(char_name, job_id)
     if (member == nil or member.unlocked == nil) then
         return true;
     end
-    return bit.band(member.unlocked, bit.lshift(1, job_id - 1)) ~= 0;
+    return bit.band(member.unlocked, bit.lshift(1, job_id)) ~= 0;
 end
 
 function M.job_level(char_name, job_id)

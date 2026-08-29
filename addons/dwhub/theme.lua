@@ -43,8 +43,14 @@ local function display_size()
         return scale_mod.BASE_W, scale_mod.BASE_H;
     end
     local ds = io.DisplaySize;
-    local w = ds.x or ds[1] or scale_mod.BASE_W;
-    local h = ds.y or ds[2] or scale_mod.BASE_H;
+    local w = scale_mod.BASE_W;
+    local h = scale_mod.BASE_H;
+    local dst = type(ds);
+    -- Ashita sugar extends numbers with __index -> math; never use .x/.y on a bare number.
+    if (dst == 'table' or dst == 'userdata') then
+        w = ds[1] or ds.x or w;
+        h = ds[2] or ds.y or h;
+    end
     return w, h;
 end
 

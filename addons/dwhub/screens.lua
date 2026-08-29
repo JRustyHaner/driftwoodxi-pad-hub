@@ -808,9 +808,16 @@ end
 
 function M.items(ctx)
     local function after_item_for_transfer(mode, char, entry, qty, n)
-        local item = entry.name or ('item ' .. tostring(entry.itemid or '?'));
-        local cmd = (mode == 'send') and cmds.squad_send(char, item, qty) or cmds.squad_fetch(char, item, qty);
-        fire(ctx, cmd, string.format('%s %s ×%d ↔ %s', mode, item, qty, char));
+        local itemid = tonumber(entry.itemid) or 0;
+        local label = entry.name or ('item ' .. tostring(itemid));
+        if (itemid <= 0) then
+            if (ctx.set_status ~= nil) then
+                ctx.set_status('Missing item id — refresh bags and try again.');
+            end
+            return;
+        end
+        local cmd = (mode == 'send') and cmds.squad_send(char, itemid, qty) or cmds.squad_fetch(char, itemid, qty);
+        fire(ctx, cmd, string.format('%s %s ×%d ↔ %s', mode, label, qty, char));
         return_to_category(n);
     end
 

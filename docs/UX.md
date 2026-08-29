@@ -22,11 +22,17 @@ Controller-first Ashita overlay for DriftwoodXI. Chrome reference: [mockups/ffxi
 
 ## Home
 
-1. Squad  
-2. Jobs  
-3. Items  
-4. Rules  
-5. Port  
+Fixed **five group rows** — Home never grows. Full map: [MENU-IA.md](./MENU-IA.md).
+
+| # | Group | Categories inside |
+|---|--------|-------------------|
+| 1 | **Party and Travel** | Squad, Jobs, Rules, Port |
+| 2 | **Inventory and Trade** | Items (+ Storage, Market, Merc when shipped) |
+| 3 | **Quests and Crafts** | Quests, Drift, Fish (+ Craft later) |
+| 4 | **Instances** | Raid, Arena |
+| 5 | **Field** | Scan, Engage |
+
+Confirm a group → pick a category → existing screen flows below.
 
 ---
 

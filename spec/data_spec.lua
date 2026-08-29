@@ -96,7 +96,8 @@ describe('data machine parse', function()
 
     it('greys locked jobs from unlock bitmask', function()
         data.handle_machine('_DWJDATA', 'd|1|who');
-        data.handle_machine('_DWJDATA', 'c|10|Alice|1|99|0|0|5|0|1|0');
+        -- unlocked=2 → bit 1 set → WAR (job id 1) per dwjobs convention
+        data.handle_machine('_DWJDATA', 'c|10|Alice|1|99|0|0|5|0|2|0');
         data.handle_machine('_DWJDATA', 'j|10|1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,');
         data.handle_machine('_DWJDATA', 'z|');
         assert.is_true(data.job_unlocked('Alice', 1));

@@ -18,6 +18,14 @@ Client-only pad overlay over typed Driftwood `!` commands. Issues track work on 
 | Optimize preview | Done |
 | In-hub squad roster | Done |
 
+## Menu structure
+
+Home is **five fixed groups** (never grows). See [MENU-IA.md](./MENU-IA.md):
+
+**Party and Travel** · **Inventory and Trade** · **Quests and Crafts** · **Instances** · **Field**
+
+Expansion tracked in [#44](https://github.com/JRustyHaner/driftwoodxi-pad-hub/issues/44).
+
 ## Next (recommended order)
 
 ### Cast phase 2 ([#35](https://github.com/JRustyHaner/driftwoodxi-pad-hub/issues/35) follow-ups)
@@ -53,7 +61,7 @@ Client-only pad overlay over typed Driftwood `!` commands. Issues track work on 
 ## Out of scope (unless product changes)
 
 - Gambit rule **authoring** (assign only — use `/gambits`)
-- Merc, craft, market, raid, parse UIs
+- Full craft/fame/parse/leaderboard UIs (categories may link to chat/`!` only)
 - Server menu packet growth
 - Unattended automation
 

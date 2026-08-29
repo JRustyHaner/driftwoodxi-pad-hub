@@ -123,14 +123,14 @@ function M.squad_find(text)
     return string.format('!squad find %s', text);
 end
 
-function M.squad_send(char, item, qty)
+function M.squad_send(char, itemid, qty)
     qty = qty or 1;
-    return string.format('!squad send %s %s %d', char, item, qty);
+    return string.format('!squad send %s %d %d', char, itemid, qty);
 end
 
-function M.squad_fetch(char, item, qty)
+function M.squad_fetch(char, itemid, qty)
     qty = qty or 1;
-    return string.format('!squad fetch %s %s %d', char, item, qty);
+    return string.format('!squad fetch %s %d %d', char, itemid, qty);
 end
 
 function M.squad_box()
