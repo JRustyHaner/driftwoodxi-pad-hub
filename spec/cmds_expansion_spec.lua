@@ -14,6 +14,8 @@ describe('cmds expansion stubs', function()
         assert.equals('!warehouse unpin 12', cmds.warehouse_unpin(12));
         assert.equals('!warehouse buy confirm', cmds.warehouse_buy_confirm());
         assert.equals('!dwu page 1', cmds.dwu_page(1));
+        assert.equals('!market page 2', cmds.market_page(2));
+        assert.equals('!market buy a1042', cmds.market_buy('a1042'));
         assert.equals('!market', cmds.market_summary());
     end);
 
@@ -42,6 +44,8 @@ describe('cmds expansion stubs', function()
         assert.equals('!arena', cmds.arena_board());
         assert.equals('!arena enter', cmds.arena_enter());
         assert.equals('!arena leave', cmds.arena_leave());
+        assert.equals('!raid shop armor', cmds.raid_shop('armor'));
+        assert.equals('!raid reforge', cmds.raid_reforge());
     end);
 
     it('builds scan and trustengage commands', function()

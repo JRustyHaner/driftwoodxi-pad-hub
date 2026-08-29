@@ -102,6 +102,25 @@ local function new_state()
             },
             board_expecting = nil,
         },
+        -- Market (_DWADATA / #56–#57)
+        market = {
+            listings = {
+                page = 1,
+                total_pages = 1,
+                total = 0,
+                page_size = 20,
+                entries = {},
+            },
+            orders = {
+                page = 1,
+                total_pages = 1,
+                total = 0,
+                page_size = 20,
+                entries = {},
+            },
+            listings_expecting = nil,
+            orders_expecting = nil,
+        },
     };
 end
 
@@ -663,6 +682,94 @@ local function handle_merc(line)
     end
 end
 
+local function market_sub(verb)
+    if (verb == 'orders') then
+        return state.market.orders;
+    end
+    return state.market.listings;
+end
+
+local function dwa_page_cmd(page)
+    return string.format('!dwa page %d', tonumber(page) or 1);
+end
+
+local function dwa_orders_cmd(page)
+    return string.format('!dwa orders %d', tonumber(page) or 1);
+end
+
+local function handle_market(line)
+    local parts = split(line, '|');
+    local kind = parts[1];
+    local inbound = channel_inbound('market');
+
+    if (kind == 'd') then
+        local version = tonumber(parts[2]) or 0;
+        if (version ~= PROTOCOL) then
+            state.status = string.format('Protocol %d (expected %d) on market', version, PROTOCOL);
+            inbound.verb = nil;
+            return;
+        end
+        inbound.verb = parts[3];
+        if (inbound.verb == 'page' or inbound.verb == 'orders') then
+            market_sub(inbound.verb).entries = {};
+        end
+        return;
+    end
+
+    if (kind == 'm' or kind == 'e') then
+        state.status = line:sub(3);
+        return;
+    end
+
+    if (inbound.verb == nil) then
+        return;
+    end
+
+    local sub = market_sub(inbound.verb);
+
+    if (kind == 'z') then
+        if (inbound.verb == 'page') then
+            table.sort(sub.entries, function(a, b)
+                return string.lower(a.name or '') < string.lower(b.name or '');
+            end);
+            state.market.listings_expecting = nil;
+        elseif (inbound.verb == 'orders') then
+            table.sort(sub.entries, function(a, b)
+                return string.lower(a.ref or '') < string.lower(b.ref or '');
+            end);
+            state.market.orders_expecting = nil;
+        end
+        inbound.verb = nil;
+        return;
+    end
+
+    if (inbound.verb == 'page' or inbound.verb == 'orders') then
+        if (kind == 'n') then
+            sub.page = tonumber(parts[2]) or sub.page;
+            sub.total = tonumber(parts[4]) or sub.total;
+            sub.page_size = tonumber(parts[5]) or sub.page_size;
+            sub.total_pages = tonumber(parts[6]) or sub.total_pages;
+            if (sub.total_pages < 1) then
+                sub.total_pages = 1;
+            end
+            return;
+        end
+        if (kind == 'r') then
+            local expecting = (inbound.verb == 'page') and state.market.listings_expecting or state.market.orders_expecting;
+            if (expecting ~= nil and sub.page ~= expecting) then
+                return;
+            end
+            sub.entries[#sub.entries + 1] = {
+                ref = parts[2] or '',
+                name = parts[3] or '?',
+                price = tonumber(parts[4]) or 0,
+                qty = tonumber(parts[5]) or 0,
+            };
+            return;
+        end
+    end
+end
+
 --- Observe-only handler for expansion senders (buffer until child issues add parsers).
 local function handle_stub_envelope(channel, line)
     local parts = split(line, '|');
@@ -717,6 +824,8 @@ function M.handle_machine(sender, message)
         handle_warehouse(message);
     elseif (channel == 'merc') then
         handle_merc(message);
+    elseif (channel == 'market') then
+        handle_market(message);
     else
         handle_stub_envelope(channel, message);
     end
@@ -1172,6 +1281,56 @@ function M.request_merc_board(enqueue, job, page)
     state.merc.board.job_filter = job;
     state.merc.board.entries = {};
     dispatch_send(enqueue, dwm_board_cmd(job, page));
+end
+
+function M.market_listings()
+    return state.market.listings.entries;
+end
+
+function M.market_listings_info()
+    local listings = state.market.listings;
+    return {
+        page = listings.page,
+        total_pages = listings.total_pages,
+        total = listings.total,
+        page_size = listings.page_size,
+    };
+end
+
+function M.market_orders()
+    return state.market.orders.entries;
+end
+
+function M.market_orders_info()
+    local orders = state.market.orders;
+    return {
+        page = orders.page,
+        total_pages = orders.total_pages,
+        total = orders.total,
+        page_size = orders.page_size,
+    };
+end
+
+function M.request_market_page(enqueue, page)
+    page = tonumber(page) or 1;
+    if (page < 1) then
+        page = 1;
+    end
+    state.market.listings_expecting = page;
+    state.market.listings.page = page;
+    state.market.listings.entries = {};
+    dispatch_send(enqueue, dwa_page_cmd(page));
+end
+
+function M.request_market_orders(enqueue, page)
+    page = tonumber(page) or 1;
+    if (page < 1) then
+        page = 1;
+    end
+    state.market.orders_expecting = page;
+    state.market.orders.page = page;
+    state.market.orders.entries = {};
+    dispatch_send(enqueue, dwa_orders_cmd(page));
 end
 
 --- Retry roster fetch while a pick screen is waiting (hub open loop).

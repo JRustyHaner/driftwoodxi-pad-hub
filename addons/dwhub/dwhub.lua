@@ -9,7 +9,7 @@
 
 addon.name    = 'dwhub';
 addon.author  = 'DriftwoodXI Pad Hub';
-addon.version = '0.6.1';
+addon.version = '0.7.0';
 addon.desc    = 'Pad-first DriftwoodXI hub — Party, Inventory, Quests, Instances, Field.';
 addon.link    = 'https://github.com/JRustyHaner/driftwoodxi-pad-hub';
 
