@@ -41,9 +41,9 @@ Closing restores both. If your Ashita build ignores an API, say so in acceptance
 
 ## Quick smoke
 
-1. `/dwhub` → Home lists Squad / Jobs / Items / Rules / Port  
-2. Squad → Call → status shows queue; chat eventually gets `!squad call`  
-3. B back to Home; B closes hub  
+1. `/dwhub` → Home lists five groups (Party and Travel, … Field)
+2. Party and Travel → Squad → Call → status shows queue
+3. B back to group, B to Home, B closes hub
 4. Character does not walk while hub is focused
 
 Full checklist: [ACCEPTANCE.md](./ACCEPTANCE.md).

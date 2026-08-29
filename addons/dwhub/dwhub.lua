@@ -4,13 +4,13 @@
 * Controller-first hub overlay. Issues the same typed ! commands the official
 * Driftwood windows use.
 *
-* Nav shell: Home categories with placeholder category screens.
+* Nav shell: Home → group → category (see docs/MENU-IA.md).
 --]]
 
 addon.name    = 'dwhub';
 addon.author  = 'DriftwoodXI Pad Hub';
-addon.version = '0.3.1';
-addon.desc    = 'Pad-first DriftwoodXI hub (squad, jobs, items, rules, port).';
+addon.version = '0.4.0';
+addon.desc    = 'Pad-first DriftwoodXI hub — Party, Inventory, Quests, Instances, Field.';
 addon.link    = 'https://github.com/JRustyHaner/driftwoodxi-pad-hub';
 
 require('common');
@@ -85,9 +85,13 @@ local function open_category(name, n)
     n:push(screens.placeholder(name, 'Unknown category.'));
 end
 
+local function open_group(group_def, n)
+    n:push(screens.group(group_def, open_category));
+end
+
 local function ensure_root()
     if (nav:depth() == 0) then
-        nav:reset(screens.home(nav, open_category));
+        nav:reset(screens.home(open_group));
     end
 end
 
