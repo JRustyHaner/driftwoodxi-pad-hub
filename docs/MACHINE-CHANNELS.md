@@ -49,7 +49,7 @@ z
 | Items / bags | `!dwq`, `!squad find` | `!dwq` | `_DWDATA` | **Shipped** |
 | Jobs | `!jobs`, `!dwj` | `!dwj` | `_DWJDATA` | **Shipped** |
 | Rules | `!squad rules`, `!dwg` | `!dwg` | `_DWGDATA` | **Shipped** |
-| Storage | `!warehouse`, `!dwu` | `!dwu` | `_DWUDATA` | **Shipped** (#53 browse/take) |
+| Storage | `!warehouse`, `!dwu` | `!dwu` | `_DWUDATA` | **Shipped** (#53–#54) |
 | Market | `!market`, `!dwa` | `!dwa` | `_DWADATA` | Stub observe |
 | Merc | `!merc`, `!dwm` | `!dwm` | `_DWMDATA` | Stub observe |
 | Quests | `/tracker`, `!dwt sync` | `!dwt` | `_DWTDATA` | Tracker parser shipped (#50) |

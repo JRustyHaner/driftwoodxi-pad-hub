@@ -24,16 +24,28 @@ describe('storage screen', function()
         assert.equals('!warehouse', cmds.warehouse_summary());
         assert.equals('!warehouse page 3', cmds.warehouse_page(3));
         assert.equals('!warehouse take 51 Alice', cmds.warehouse_take(51, 'Alice'));
+        assert.equals('!warehouse put Alice 0 5 99', cmds.warehouse_put('Alice', 0, 5, 99));
+        assert.equals('!warehouse stashall', cmds.warehouse_stashall());
+        assert.equals('!warehouse pull:4096,16512', cmds.warehouse_pull('4096,16512'));
+        assert.equals('!warehouse pin 51', cmds.warehouse_pin(51));
+        assert.equals('!warehouse unpin 51', cmds.warehouse_unpin(51));
+        assert.equals('!warehouse buy', cmds.warehouse_buy());
+        assert.equals('!warehouse buy confirm', cmds.warehouse_buy_confirm());
         assert.equals('!dwu page 2', cmds.dwu_page(2));
     end);
 
-    it('lists three storage rows', function()
+    it('lists eight storage rows', function()
         local screen = screens.storage(ctx);
         local rows = screen:rows();
-        assert.equals(3, #rows);
+        assert.equals(8, #rows);
         assert.equals('Summary', rows[1].label);
         assert.equals('Browse shelf…', rows[2].label);
         assert.equals('Take…', rows[3].label);
+        assert.equals('Put from bags…', rows[4].label);
+        assert.equals('Stash all…', rows[5].label);
+        assert.equals('Pull list…', rows[6].label);
+        assert.equals('Pin / Unpin…', rows[7].label);
+        assert.equals('Buy slot…', rows[8].label);
     end);
 
     it('summary row queues !warehouse', function()
@@ -101,5 +113,24 @@ describe('storage screen', function()
             end
         end
         assert.is_true(found);
+    end);
+
+    it('stash all confirm queues !warehouse stashall', function()
+        local screen = screens.storage(ctx);
+        local n = nav.new();
+        screen.on_confirm(screen, 5, n);
+        local confirm = n:current();
+        confirm.on_confirm(confirm, 1, n);
+        assert.same({ '!warehouse stashall' }, queued);
+    end);
+
+    it('buy slot confirm queues buy then buy confirm', function()
+        local screen = screens.storage(ctx);
+        local n = nav.new();
+        screen.on_confirm(screen, 8, n);
+        local confirm = n:current();
+        confirm.on_confirm(confirm, 1, n);
+        assert.equals('!warehouse buy', queued[1]);
+        assert.equals('!warehouse buy confirm', queued[2]);
     end);
 end);

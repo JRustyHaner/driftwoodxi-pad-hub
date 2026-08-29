@@ -242,6 +242,35 @@ function M.warehouse_take(slot, char)
     return string.format('!warehouse take %d %s', tonumber(slot) or 0, char or '');
 end
 
+function M.warehouse_put(char, loc, slot, qty)
+    return string.format('!warehouse put %s %d %d %d', char or '', tonumber(loc) or 0, tonumber(slot) or 0, tonumber(qty) or 1);
+end
+
+function M.warehouse_stashall()
+    return '!warehouse stashall';
+end
+
+function M.warehouse_pull(list)
+    local text = (list or ''):gsub('^%s+', ''):gsub('%s+$', '');
+    return string.format('!warehouse pull:%s', text);
+end
+
+function M.warehouse_pin(slot)
+    return string.format('!warehouse pin %d', tonumber(slot) or 0);
+end
+
+function M.warehouse_unpin(slot)
+    return string.format('!warehouse unpin %d', tonumber(slot) or 0);
+end
+
+function M.warehouse_buy()
+    return '!warehouse buy';
+end
+
+function M.warehouse_buy_confirm()
+    return '!warehouse buy confirm';
+end
+
 function M.dwu_page(page)
     return string.format('!dwu page %d', tonumber(page) or 1);
 end
