@@ -56,7 +56,7 @@ z
 | Drift | `!drift`, `!dwn` / `!dwo` | `!dwn` / `!dwo` | `_DWNDATA` / `_DWODATA` | Stub observe (TBD) |
 | Fish | `!fish`, `!fish next`, … | `!dwf` | `_DWFDATA` | Fish UI shipped (#47); machine parse stub |
 | Raid | `!raid` | *(chat)* / `!dwr`? | *(TBD)* | Chat-only today |
-| Arena | `!arena` | *(chat)* | *(none)* | Chat-only today |
+| Arena | `!arena`, `!arena enter`, `!arena leave` | *(chat)* | *(none)* | Arena UI shipped (#48); chat-only |
 | Scan | `!scan`, `!scan 0 N` | *(chat)* / `!dwx`? | `_DWXDATA` | Scan UI shipped (#46); chat-only |
 | Engage | `!trustengage`, `/dwengage on\|off` | `!dwe`? | `_DWEDATA` | Engage UI shipped (#45); machine parse stub |
 | Report | `!dwreport` | `!dwr` | `_DWRDATA` | Not in hub UI |
