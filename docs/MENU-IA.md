@@ -87,7 +87,7 @@ Target info and client engage helpers.
 2. **Group cap:** Prefer ≤7 rows per group; use viewport paging inside a screen, not extra Home tiers.
 3. **Read vs act:** Journal/status rows may dump to chat in v1; warp/spend/enter rows use [#43 confirm flow](https://github.com/JRustyHaner/driftwoodxi-pad-hub/issues/43) when implemented.
 4. **Naming:** Use group names above in UI titles (e.g. hub screen title “Party and Travel”, not “Core”).
-5. **Implementation:** Group screen → category screen → existing pick flows. Track in [#44](https://github.com/JRustyHaner/driftwoodxi-pad-hub/issues/44).
+5. **Implementation:** Group screen → category screen → existing pick flows. **Shipped in v0.4.0** (`screens.HOME_GROUPS`, `screens.group`). Further categories track in [#44](https://github.com/JRustyHaner/driftwoodxi-pad-hub/issues/44).
 
 ## Issue map
 

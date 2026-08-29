@@ -10,6 +10,9 @@ Manual verification (CI cannot boot FFXI). Run on Steam Deck Game Mode or Deskto
 
 ## Navigation
 
+- [ ] Home shows **five groups** only: Party and Travel, Inventory and Trade, Quests and Crafts, Instances, Field
+- [ ] Group → category → screen (e.g. Party and Travel → Squad → Call)
+- [ ] Planned categories appear dimmed; confirming shows status, does not crash
 - [ ] D-pad / arrows move focus; yellow selection + description panel update
 - [ ] A / Enter confirms; B / Esc backs; B on Home closes
 - [ ] While open, character does not move / stock menu does not eat A/B / arrows / Enter / Esc (gamepad + keyboard block)
