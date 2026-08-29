@@ -18,6 +18,8 @@ describe('cmds expansion stubs', function()
         assert.equals('!drift balance', cmds.drift_balance());
         assert.equals('!drift accept w3', cmds.drift_accept('w3'));
         assert.equals('!drift abandon d4', cmds.drift_abandon('d4'));
+        assert.equals('!drift augment x1', cmds.drift_augment_price('x1'));
+        assert.equals('!drift confirm', cmds.drift_confirm());
         assert.equals('!fish', cmds.fish_status());
         assert.equals('!fish next', cmds.fish_next());
         assert.equals('!fish rank', cmds.fish_rank());

@@ -264,6 +264,28 @@ function M.drift_abandon(slot)
     return string.format('!drift abandon %s', slot);
 end
 
+M.DRIFT_AUGMENT_SLOTS = { 'x1', 'x2', 'x3', 'x4' };
+
+function M.drift_augments()
+    return '!drift augments';
+end
+
+function M.drift_augment_price(slot)
+    return string.format('!drift augment %s', slot);
+end
+
+function M.drift_confirm()
+    return '!drift confirm';
+end
+
+function M.drift_shelf(job)
+    return string.format('!drift shelf %s', string.lower(job or ''));
+end
+
+function M.drift_buy(item_id)
+    return string.format('!drift buy %d', item_id or 0);
+end
+
 function M.fish_status()
     return '!fish';
 end
