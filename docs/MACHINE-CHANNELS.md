@@ -58,7 +58,7 @@ z
 | Raid | `!raid` | *(chat)* / `!dwr`? | *(TBD)* | Chat-only today |
 | Arena | `!arena` | *(chat)* | *(none)* | Chat-only today |
 | Scan | `!scan` | *(chat)* / `!dwx`? | `_DWXDATA` | Chat-only today |
-| Engage | `!trustengage`, `/dwengage` | `!dwe`? | `_DWEDATA` | Stub observe |
+| Engage | `!trustengage`, `/dwengage on\|off` | `!dwe`? | `_DWEDATA` | Engage UI shipped (#45); machine parse stub |
 | Report | `!dwreport` | `!dwr` | `_DWRDATA` | Not in hub UI |
 
 **Note:** `_DWRDATA` is used by **dwreport** in current Lumoria installs. Raid may remain chat-only until sender ownership is confirmed.

@@ -9,7 +9,7 @@ local function action_rows(entries)
     return function()
         local rows = {};
         for i, e in ipairs(entries) do
-            rows[i] = { label = e.label, desc = e.desc, dim = e.dim, id = e.id };
+            rows[i] = { label = e.label, desc = e.desc, dim = e.dim, id = e.id, cmd = e.cmd };
         end
         return rows;
     end;
